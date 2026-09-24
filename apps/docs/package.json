@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
+    "format": "prettier --write \"app/**/*.tsx\" \"app/**/*.ts\"",
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
@@ -22,7 +23,7 @@
     "@types/node": "26.4.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
-    "eslint": "10.9.1",
-    "typescript": "7.0.2"
+    "eslint": "9.17.0",
+    "typescript": "6.0.3"
   }
 }

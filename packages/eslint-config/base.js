@@ -1,8 +1,7 @@
-import babelParser from "@babel/eslint-parser";
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import turboPlugin from "eslint-plugin-turbo";
-import onlyWarn from "eslint-plugin-only-warn";
+import tsParser from "@typescript-eslint/parser";
 
 /**
  * A shared ESLint configuration for the repository.
@@ -10,15 +9,19 @@ import onlyWarn from "eslint-plugin-only-warn";
  * @type {import("eslint").Linter.Config[]}
  * */
 export const config = [
+  {
+    ignores: ["dist/**"],
+  },
   js.configs.recommended,
   eslintConfigPrettier,
   {
     languageOptions: {
-      parser: babelParser,
+      parser: tsParser,
       parserOptions: {
-        requireConfigFile: false,
-        babelOptions: {
-          presets: ["@babel/preset-typescript"],
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
         },
       },
     },
@@ -27,14 +30,7 @@ export const config = [
     },
     rules: {
       "turbo/no-undeclared-env-vars": "warn",
+      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     },
-  },
-  {
-    plugins: {
-      onlyWarn,
-    },
-  },
-  {
-    ignores: ["dist/**"],
   },
 ];
