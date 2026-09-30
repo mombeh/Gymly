@@ -18,6 +18,8 @@ const config: Config = {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
   moduleNameMapper: pathsToModuleNameMapper(paths, { prefix: '<rootDir>/' }),
+  // Loads DATABASE_URL from apps/api/.env for tests that touch the database.
+  setupFiles: ['dotenv/config'],
   collectCoverageFrom: [
     'src/**/*.(t|j)s',
     'libs/**/*.(t|j)s',
