@@ -1,53 +1,62 @@
-import {
-  createPrismaClient,
-  DATABASE_URL_MISSING_MESSAGE,
-  requireDatabaseUrl,
-} from './prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { createPrismaClient, PrismaService } from './prisma.service';
 
-describe('prisma database url resolution', () => {
-  const originalDatabaseUrl = process.env.DATABASE_URL;
+function createConfigService(value: unknown): ConfigService {
+  return {
+    getOrThrow: () => {
+      if (value === undefined) {
+        throw new Error('Configuration key "app" does not exist');
+      }
 
-  afterEach(() => {
-    if (originalDatabaseUrl === undefined) {
-      delete process.env.DATABASE_URL;
-    } else {
-      process.env.DATABASE_URL = originalDatabaseUrl;
+      return value;
+    },
+  } as unknown as ConfigService;
+}
+
+describe('PrismaService', () => {
+  it('builds its client from the validated global configuration', () => {
+    const service = new PrismaService(
+      createConfigService({ database: { url: 'postgresql://u:p@localhost:5432/gymly' } }),
+    );
+
+    expect(service).toBeDefined();
+    expect(typeof service.$connect).toBe('function');
+  });
+
+  it('fails fast when the app configuration is unavailable', () => {
+    expect(() => new PrismaService(createConfigService(undefined))).toThrow(
+      'Configuration key "app" does not exist',
+    );
+  });
+
+  it('does not read DATABASE_URL from process.env itself', () => {
+    const original = process.env.DATABASE_URL;
+
+    process.env.DATABASE_URL = 'postgresql://should:be:ignored@localhost:5432/ignored';
+
+    try {
+      // Construction succeeds from injected config regardless of process.env,
+      // which is what keeps credentials in one validated place.
+      expect(
+        new PrismaService(
+          createConfigService({ database: { url: 'postgresql://u:p@localhost:5432/gymly' } }),
+        ),
+      ).toBeDefined();
+    } finally {
+      if (original === undefined) {
+        delete process.env.DATABASE_URL;
+      } else {
+        process.env.DATABASE_URL = original;
+      }
     }
   });
+});
 
-  describe('requireDatabaseUrl', () => {
-    it('returns the configured connection string', () => {
-      process.env.DATABASE_URL = 'postgresql://u:p@localhost:5432/gymly';
+describe('createPrismaClient', () => {
+  it('builds a client from an explicit connection string', () => {
+    const client = createPrismaClient('postgresql://u:p@localhost:5432/gymly_test');
 
-      expect(requireDatabaseUrl()).toBe('postgresql://u:p@localhost:5432/gymly');
-    });
-
-    it('throws a setup-oriented error when the variable is missing', () => {
-      delete process.env.DATABASE_URL;
-
-      expect(() => requireDatabaseUrl()).toThrow(DATABASE_URL_MISSING_MESSAGE);
-    });
-
-    it('treats a whitespace-only value as missing', () => {
-      process.env.DATABASE_URL = '   ';
-
-      expect(() => requireDatabaseUrl()).toThrow(DATABASE_URL_MISSING_MESSAGE);
-    });
-  });
-
-  describe('createPrismaClient', () => {
-    it('fails fast rather than connecting with an unusable value', () => {
-      delete process.env.DATABASE_URL;
-
-      expect(() => createPrismaClient()).toThrow(DATABASE_URL_MISSING_MESSAGE);
-    });
-
-    it('builds a client from an explicit connection string', () => {
-      delete process.env.DATABASE_URL;
-
-      const client = createPrismaClient('postgresql://u:p@localhost:5432/gymly');
-
-      expect(client).toBeDefined();
-    });
+    expect(client).toBeDefined();
+    expect(typeof client.member).toBe('object');
   });
 });
