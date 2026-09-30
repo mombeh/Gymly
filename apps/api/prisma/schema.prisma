@@ -1,0 +1,110 @@
+// Gymly database schema
+// Prisma 7 / PostgreSQL 16
+//
+// Column names are snake_case via @map; table names are plural lowercase via @@map.
+// The Prisma-side field names (firstName, dateOfBirth, ...) are the public API.
+//
+// Constraints that Prisma cannot express (expression unique indexes, CHECK
+// constraints) are added as raw SQL in prisma/migrations. See the init migration.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Application-level access level of a login identity.
+enum UserRole {
+  OWNER
+  ADMIN
+  STAFF
+  MEMBER
+}
+
+/// Lifecycle state of a login identity.
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+/// Lifecycle state of a gym member record.
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+/// Self-reported gender. Optional because it is not collected at signup.
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNDISCLOSED
+}
+
+/// A login identity. Holds credentials and authorisation; holds no gym profile data.
+model User {
+  id String @id @default(uuid(7)) @db.Uuid
+
+  firstName String @map("first_name") @db.VarChar(100)
+  lastName  String @map("last_name") @db.VarChar(100)
+
+  /// Login identifier. Unique (case-insensitive, enforced by a lower() index).
+  email String @unique @db.VarChar(320)
+
+  /// Output of a password hashing function (bcrypt/argon2). Never a plaintext password.
+  /// Length 255 accommodates bcrypt (60) and argon2id (~97). Hashing itself is
+  /// applied by the auth layer, which is not implemented yet.
+  passwordHash String @map("password_hash") @db.VarChar(255)
+
+  role   UserRole   @default(MEMBER)
+  status UserStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status], map: "users_status_idx")
+  @@map("users")
+}
+
+/// A person enrolled at the gym. Exists independently of whether the person has a
+/// login identity; there is intentionally no foreign key to User in this foundation.
+model Member {
+  id String @id @default(uuid(7)) @db.Uuid
+
+  /// Human-readable gym member number, e.g. GYM-000123. Unique (case-insensitive).
+  memberCode String @unique @map("member_code") @db.VarChar(20)
+
+  firstName String @map("first_name") @db.VarChar(100)
+  lastName  String @map("last_name") @db.VarChar(100)
+
+  /// Required, and unique on its digits-only form so that differently formatted
+  /// variants of the same number (e.g. "+254 712 345 678" / "0712345678")
+  /// cannot register as two separate members.
+  phone String @db.VarChar(32)
+
+  /// Optional. Not unique: household members may share an address, so a non-unique
+  /// index is used instead to support lookup and duplicate review.
+  email String? @db.VarChar(320)
+
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  gender      Gender?
+
+  address          String? @db.VarChar(500)
+  emergencyContact String? @map("emergency_contact") @db.VarChar(500)
+
+  status MemberStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status], map: "members_status_idx")
+  @@index([lastName, firstName], map: "members_last_name_first_name_idx")
+  @@map("members")
+}
