@@ -17,7 +17,15 @@ const config: Config = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  moduleNameMapper: pathsToModuleNameMapper(paths, { prefix: '<rootDir>/' }),
+  moduleNameMapper: {
+    // The generated Prisma client is ESM-style TypeScript: its relative imports
+    // carry explicit .js extensions that only exist after compilation, so they
+    // must be resolved back to the .ts sources.
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    ...pathsToModuleNameMapper(paths, { prefix: '<rootDir>/' }),
+  },
+  // Loads DATABASE_URL from apps/api/.env for tests that touch the database.
+  setupFiles: ['dotenv/config'],
   collectCoverageFrom: [
     'src/**/*.(t|j)s',
     'libs/**/*.(t|j)s',
