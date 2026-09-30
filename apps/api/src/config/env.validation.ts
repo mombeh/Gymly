@@ -34,6 +34,19 @@ class EnvValidationError extends Error {
   }
 }
 
+/** Renders a value for an error message without falling back to "[object Object]". */
+function describeValue(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (value === null || typeof value !== 'object') {
+    return String(value);
+  }
+
+  return JSON.stringify(value) ?? 'an object';
+}
+
 function readString(
   raw: Record<string, unknown>,
   key: string,
@@ -64,7 +77,7 @@ function readPort(raw: Record<string, unknown>, problems: string[]): number {
   const port = typeof value === 'number' ? value : Number(value);
 
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    problems.push(`PORT must be an integer between 1 and 65535, received "${String(value)}".`);
+    problems.push(`PORT must be an integer between 1 and 65535, received "${describeValue(value)}".`);
     return DEFAULTS.PORT;
   }
 
@@ -163,7 +176,7 @@ function readBoolean(
     return false;
   }
 
-  problems.push(`${key} must be "true" or "false", received "${String(value)}".`);
+  problems.push(`${key} must be "true" or "false", received "${describeValue(value)}".`);
 
   return fallback;
 }
