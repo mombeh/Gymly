@@ -1,10 +1,18 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
 import { ApiError, NetworkError } from '../lib/api-client';
 import { useAuth } from '../lib/auth-context';
+import { PasswordInput } from './password-input';
+import { safeNextPath } from '../lib/navigation';
+
+/** Keeps the originally requested destination when moving between the two forms. */
+function registerHref(nextPath: string | null): string {
+  return nextPath === null ? '/register' : `/register?next=${encodeURIComponent(nextPath)}`;
+}
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -57,7 +65,7 @@ export function LoginForm() {
 
     try {
       await login(email, password);
-      router.replace(nextPath !== null && nextPath.startsWith('/') ? nextPath : '/dashboard');
+      router.replace(safeNextPath(nextPath));
     } catch (error) {
       setFormError(describeError(error));
       setIsSubmitting(false);
@@ -90,19 +98,13 @@ export function LoginForm() {
         </p>
       )}
 
-      <label className="auth-label" htmlFor="password">
-        Password
-      </label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        className="auth-input"
+      <PasswordInput
+        label="Password"
         value={password}
-        onChange={(event) => setPassword(event.target.value)}
-        aria-invalid={fieldErrors.password !== undefined}
-        aria-describedby={fieldErrors.password !== undefined ? 'password-error' : undefined}
+        onChange={setPassword}
+        autoComplete="current-password"
+        invalid={fieldErrors.password !== undefined}
+        describedBy={fieldErrors.password !== undefined ? 'password-error' : undefined}
         disabled={isSubmitting}
       />
       {fieldErrors.password !== undefined && (
@@ -120,6 +122,10 @@ export function LoginForm() {
       <button type="submit" className="auth-submit" disabled={isSubmitting}>
         {isSubmitting ? 'Signing in…' : 'Sign in'}
       </button>
+
+      <p className="auth-switch">
+        Don&apos;t have an account? <Link className="auth-link" href={registerHref(nextPath)}>Register</Link>
+      </p>
     </form>
   );
 }

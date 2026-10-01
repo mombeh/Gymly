@@ -2,6 +2,7 @@ import type { UserRole, UserStatus } from '../generated/prisma/client';
 
 export const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password';
 export const AUTHENTICATION_REQUIRED_MESSAGE = 'Authentication required';
+export const EMAIL_TAKEN_MESSAGE = 'An account with this email already exists';
 
 /**
  * Claims carried by an access token. `sub` is the user id; the rest is a

@@ -14,7 +14,7 @@ import {
 
 import { apiRequest } from './api-client';
 import { clearToken, readToken, writeToken } from './auth-storage';
-import type { CurrentUserResponse, LoginResponse, PublicUser } from './api-types';
+import type { CurrentUserResponse, LoginResponse, PublicUser, RegisterInput } from './api-types';
 
 export const LOGIN_PATH = '/login';
 
@@ -28,6 +28,8 @@ export interface AuthContextValue {
   status: AuthStatus;
   user: PublicUser | null;
   login: (email: string, password: string) => Promise<void>;
+  /** Creates the account and signs the new user straight in. */
+  register: (input: RegisterInput) => Promise<void>;
   logout: () => void;
 }
 
@@ -90,6 +92,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('authenticated');
   }, []);
 
+  const register = useCallback(async (input: RegisterInput) => {
+    // The API answers with the same LoginResponse as /auth/login, so registering
+    // signs the user in without a second request.
+    const response = await apiRequest<LoginResponse>('/auth/register', {
+      method: 'POST',
+      body: {
+        firstName: input.firstName.trim(),
+        lastName: input.lastName.trim(),
+        email: input.email.trim(),
+        password: input.password,
+      },
+    });
+
+    writeToken(response.accessToken);
+    setUser(response.user);
+    setStatus('authenticated');
+  }, []);
+
   const logout = useCallback(() => {
     clearToken();
     setUser(null);
@@ -98,8 +118,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router]);
 
   const value = useMemo(
-    () => ({ status, user, login, logout }),
-    [status, user, login, logout],
+    () => ({ status, user, login, register, logout }),
+    [status, user, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

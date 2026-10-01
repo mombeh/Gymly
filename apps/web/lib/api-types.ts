@@ -22,6 +22,14 @@ export interface CurrentUserResponse {
   user: PublicUser;
 }
 
+/** Body of POST /auth/register. Mirrors the API's RegisterDto. */
+export interface RegisterInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 /** Error body produced by the API's global exception filter. */
 export interface ApiErrorBody {
   statusCode: number;
