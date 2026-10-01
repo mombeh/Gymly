@@ -21,12 +21,19 @@ const createdUser = {
   updatedAt: new Date(),
 };
 
-const validDto: RegisterDto = {
-  firstName: 'Nkwenu',
-  lastName: 'Inadine',
-  email: 'nkwenuinadine31@gmail.com',
-  password: plaintext,
-};
+/**
+ * Builds a request body. A factory rather than a shared constant, so a test
+ * never spreads a DTO instance into a new object.
+ */
+function dto(overrides: Partial<RegisterDto> = {}): RegisterDto {
+  return {
+    firstName: 'Nkwenu',
+    lastName: 'Inadine',
+    email: 'nkwenuinadine31@gmail.com',
+    password: plaintext,
+    ...overrides,
+  };
+}
 
 function uniqueConstraintError(): Error {
   return new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
@@ -72,7 +79,7 @@ describe('AuthService.register', () => {
   it('creates the account and returns a token so the caller is signed in', async () => {
     const { service, tokens } = createService({});
 
-    const result = await service.register(validDto);
+    const result = await service.register(dto());
 
     expect(result).toEqual({
       accessToken: 'signed.jwt.token',
@@ -97,7 +104,7 @@ describe('AuthService.register', () => {
   it('creates the account as ACTIVE so it can actually log in', async () => {
     const { service, create } = createService({});
 
-    await service.register(validDto);
+    await service.register(dto());
 
     expect(create).toHaveBeenCalledWith({
       data: expect.objectContaining({ status: 'ACTIVE', role: 'MEMBER' }),
@@ -107,7 +114,7 @@ describe('AuthService.register', () => {
   it('never returns or logs the password or its hash', async () => {
     const { service, hash } = createService({});
 
-    const result = await service.register(validDto);
+    const result = await service.register(dto());
     const serialised = JSON.stringify(result);
 
     expect(hash).toHaveBeenCalledWith(plaintext);
@@ -119,7 +126,7 @@ describe('AuthService.register', () => {
   it('trims whitespace, which the users table requires', async () => {
     const { service, create } = createService({});
 
-    await service.register({ ...validDto, email: '  spaced@gymly.test  ', firstName: ' Ada ' });
+    await service.register(dto({ email: '  spaced@gymly.test  ', firstName: ' Ada ' }));
 
     expect(create).toHaveBeenCalledWith({
       data: expect.objectContaining({ email: 'spaced@gymly.test', firstName: 'Ada' }),
@@ -129,7 +136,7 @@ describe('AuthService.register', () => {
   it('checks for an existing address case-insensitively', async () => {
     const { service, findFirst } = createService({});
 
-    await service.register({ ...validDto, email: 'NkwenuInadine31@Gmail.com' });
+    await service.register(dto({ email: 'NkwenuInadine31@Gmail.com' }));
 
     expect(findFirst).toHaveBeenCalledWith({
       where: { email: { equals: 'NkwenuInadine31@Gmail.com', mode: 'insensitive' } },
@@ -139,7 +146,7 @@ describe('AuthService.register', () => {
   it('rejects an address that is already registered', async () => {
     const { service, create, tokens } = createService({ existing: createdUser });
 
-    await expect(service.register(validDto)).rejects.toThrow(new ConflictException(EMAIL_TAKEN_MESSAGE));
+    await expect(service.register(dto())).rejects.toThrow(new ConflictException(EMAIL_TAKEN_MESSAGE));
     expect(create).not.toHaveBeenCalled();
     expect(tokens.issue).not.toHaveBeenCalled();
   });
@@ -148,12 +155,12 @@ describe('AuthService.register', () => {
     // Two concurrent registrations can both pass the pre-check; the index decides.
     const { service } = createService({ createError: uniqueConstraintError() });
 
-    await expect(service.register(validDto)).rejects.toThrow(new ConflictException(EMAIL_TAKEN_MESSAGE));
+    await expect(service.register(dto())).rejects.toThrow(new ConflictException(EMAIL_TAKEN_MESSAGE));
   });
 
   it('does not disguise an unrelated database failure as a conflict', async () => {
     const { service } = createService({ createError: new Error('connection lost') });
 
-    await expect(service.register(validDto)).rejects.toThrow('connection lost');
+    await expect(service.register(dto())).rejects.toThrow('connection lost');
   });
 });

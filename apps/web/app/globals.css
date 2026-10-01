@@ -1,12 +1,39 @@
+/**
+ * Gymly palette.
+ *
+ * --brand is the requested brand colour, #84A98C. Measured against white it
+ * reaches only 2.61:1, which fails WCAG AA for body text, so it is never used
+ * as a text colour on a light background. Text uses --brand-ink (8.06:1) and
+ * headings --brand-deep (10.52:1); --brand is used for surfaces, accents and
+ * buttons, where it carries near-black text at 6.81:1.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand: #84a98c;
+  --brand-deep: #2f4433;
+  --brand-ink: #3d5641;
+  --brand-tint: #eef3ef;
+  --brand-tint-strong: #dde7e0;
+
+  --background: #fbfcfb;
+  --foreground: #24302a;
+  --muted: #5b6b62;
+  --border: #d7e0d9;
+  --accent-contrast: #1a2320;
+
+  --radius: 0.875rem;
+  --shadow: 0 1px 2px rgb(36 48 42 / 6%), 0 8px 24px rgb(36 48 42 / 8%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --brand-tint: #1c2620;
+    --brand-tint-strong: #24322a;
+
+    --background: #101614;
+    --foreground: #e6ede8;
+    --muted: #a3b3a9;
+    --border: #2c3a32;
+    --accent-contrast: #101614;
   }
 }
 
@@ -19,6 +46,8 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -32,31 +61,323 @@ a {
   text-decoration: none;
 }
 
-.imgDark {
-  display: none;
+h1,
+h2,
+h3 {
+  color: var(--brand-deep);
+  line-height: 1.15;
 }
+
 @media (prefers-color-scheme: dark) {
+  h1,
+  h2,
+  h3 {
+    color: var(--brand);
+  }
+
   html {
     color-scheme: dark;
   }
+}
 
-  .imgLight {
-    display: none;
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font: inherit;
+  font-weight: 600;
+  border-radius: 0.625rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  color: var(--accent-contrast);
+  background: var(--brand);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #93b59a;
+}
+
+.btn-secondary {
+  color: var(--brand-deep);
+  background: transparent;
+  border-color: var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--brand-tint);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn:focus-visible,
+.auth-link:focus-visible {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- landing */
+
+.landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-deep);
+}
+
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 3rem;
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand-deep);
+  background: var(--brand-tint);
+  border: 1px solid var(--brand-tint-strong);
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+
+.hero-title {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.hero-title em {
+  font-style: normal;
+  color: var(--brand);
+}
+
+.hero-lede {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--muted);
+  max-width: 34rem;
+  margin-bottom: 2rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.hero-actions-center {
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+.hero-note {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.hero-art {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.hero-art > * {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--brand-tint);
+  box-shadow: var(--shadow);
+}
+
+.hero-art > *:first-child {
+  grid-row: span 2;
+}
+
+.hero-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.features {
+  background: var(--brand-tint);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.features-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3.5rem 2rem;
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.section-lede {
+  color: var(--muted);
+  max-width: 38rem;
+  margin-bottom: 2.25rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.25rem;
+}
+
+.feature-card {
+  padding: 1.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 1rem;
+  color: var(--brand-deep);
+  background: var(--brand-tint);
+  border-radius: 0.75rem;
+}
+
+.feature-card h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+}
+
+.feature-card p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.cta-band {
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.cta-band h2 {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.cta-band p {
+  color: var(--muted);
+  max-width: 32rem;
+  margin: 0 auto 2rem;
+}
+
+.landing-footer {
+  margin-top: auto;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: 1.5rem;
   }
 
-  .imgDark {
-    display: unset;
+  .landing-nav {
+    padding: 1rem 1.25rem;
+  }
+
+  .features-inner,
+  .cta-band {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
 }
 
-/* Authentication and the signed-in area. */
+@media (max-width: 520px) {
+  .hero-art {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-art > *:first-child {
+    grid-row: auto;
+  }
+}
+
+/* ------------------------------------------------------- authentication */
+
 .auth-page,
 .dashboard {
   min-height: 100vh;
   margin: 0 auto;
   padding: 3rem 1.5rem;
   max-width: 42rem;
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 .auth-form {
@@ -64,20 +385,20 @@ a {
   flex-direction: column;
   gap: 0.5rem;
   padding: 2rem;
-  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
-  border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  box-shadow: var(--shadow);
 }
 
 .auth-title {
   font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
+  font-weight: 700;
 }
 
 .auth-subtitle {
-  color: color-mix(in srgb, var(--foreground) 65%, transparent);
-  margin: 0 0 1rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
 }
 
 .auth-label {
@@ -91,13 +412,17 @@ a {
   font: inherit;
   color: inherit;
   background: var(--background);
-  border: 1px solid color-mix(in srgb, var(--foreground) 25%, transparent);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
 }
 
 .auth-input:focus-visible {
-  outline: 2px solid var(--foreground);
+  outline: 2px solid var(--brand-deep);
   outline-offset: 1px;
+}
+
+.auth-input[aria-invalid='true'] {
+  border-color: #c0392b;
 }
 
 /* Password field: the toggle sits inside the border so it reads as one control. */
@@ -122,7 +447,7 @@ a {
   width: 2.25rem;
   height: 2.25rem;
   padding: 0;
-  color: color-mix(in srgb, var(--foreground) 60%, transparent);
+  color: var(--muted);
   background: transparent;
   border: none;
   border-radius: 0.375rem;
@@ -130,12 +455,12 @@ a {
 }
 
 .auth-password-toggle:hover:not(:disabled) {
-  color: var(--foreground);
-  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  color: var(--brand-deep);
+  background: var(--brand-tint);
 }
 
 .auth-password-toggle:focus-visible {
-  outline: 2px solid var(--foreground);
+  outline: 2px solid var(--brand-deep);
   outline-offset: 1px;
 }
 
@@ -144,61 +469,43 @@ a {
   cursor: not-allowed;
 }
 
-/* Prompt between the two forms, e.g. "No account yet? Register". */
-.auth-switch {
-  margin: 1.25rem 0 0;
-  font-size: 0.875rem;
-  text-align: center;
-  color: color-mix(in srgb, var(--foreground) 70%, transparent);
-}
-
-.auth-link {
-  color: var(--foreground);
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.auth-link:hover {
-  text-decoration-thickness: 2px;
-}
-
-.auth-hint {
-  font-size: 0.8125rem;
-  color: color-mix(in srgb, var(--foreground) 60%, transparent);
-  margin: 0.25rem 0 0;
-}
-
-.auth-input[aria-invalid='true'] {
-  border-color: #dc2626;
-}
-
 .auth-field-error {
   font-size: 0.8125rem;
-  color: #dc2626;
-  margin: 0.125rem 0 0;
+  color: #c0392b;
 }
 
 .auth-form-error {
   font-size: 0.875rem;
-  color: #dc2626;
-  background: color-mix(in srgb, #dc2626 10%, transparent);
-  border: 1px solid color-mix(in srgb, #dc2626 35%, transparent);
+  color: #a33424;
+  background: #fdeeec;
+  border: 1px solid #f3c6bf;
   border-radius: 0.5rem;
   padding: 0.625rem 0.75rem;
-  margin: 0.75rem 0 0;
+  margin-top: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .auth-form-error {
+    color: #ffb4a8;
+    background: #3a1e1a;
+    border-color: #5c2c25;
+  }
 }
 
 .auth-submit {
   margin-top: 1.25rem;
-  padding: 0.625rem 1rem;
+  padding: 0.75rem 1rem;
   font: inherit;
-  font-weight: 500;
-  color: var(--background);
-  background: var(--foreground);
+  font-weight: 600;
+  color: var(--accent-contrast);
+  background: var(--brand);
   border: 1px solid transparent;
   border-radius: 0.5rem;
   cursor: pointer;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background: #93b59a;
 }
 
 .auth-submit:disabled {
@@ -211,9 +518,30 @@ a {
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  color: color-mix(in srgb, var(--foreground) 65%, transparent);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  color: var(--muted);
 }
+
+/* Prompt between the two forms, e.g. "No account yet? Register". */
+.auth-switch {
+  margin: 1.25rem 0 0;
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.auth-link {
+  color: var(--brand-deep);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-hint {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- dashboard */
 
 .dashboard-header {
   display: flex;
@@ -225,32 +553,32 @@ a {
 
 .dashboard-title {
   font-size: 1.75rem;
-  font-weight: 600;
-  margin: 0;
+  font-weight: 700;
 }
 
 .dashboard-subtitle {
-  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+  color: var(--muted);
   margin: 0.25rem 0 0;
+  text-transform: capitalize;
 }
 
 .dashboard-card {
   padding: 1.5rem;
-  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
-  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
 }
 
 .dashboard-card-title {
   font-size: 1.125rem;
   font-weight: 600;
-  margin: 0 0 1rem;
+  margin-bottom: 1rem;
 }
 
 .dashboard-details {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin: 0;
 }
 
 .dashboard-details div {
@@ -261,9 +589,5 @@ a {
 }
 
 .dashboard-details dt {
-  color: color-mix(in srgb, var(--foreground) 65%, transparent);
-}
-
-.dashboard-details dd {
-  margin: 0;
+  color: var(--muted);
 }
