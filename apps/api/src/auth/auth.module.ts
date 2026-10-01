@@ -4,6 +4,7 @@ import { JwtModule, type JwtSignOptions } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
 import type { AppConfiguration } from '../config/configuration';
@@ -33,8 +34,10 @@ import type { AppConfiguration } from '../config/configuration';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PasswordService, TokenService, JwtAuthGuard],
+  providers: [AuthService, PasswordService, TokenService, JwtAuthGuard, RolesGuard],
   // Exported for future resource modules that need to identify the caller.
-  exports: [TokenService, JwtAuthGuard],
+  // RolesGuard is exported so resource modules can compose guards explicitly if
+  // a route needs authentication without a role restriction.
+  exports: [TokenService, JwtAuthGuard, RolesGuard],
 })
 export class AuthModule {}
