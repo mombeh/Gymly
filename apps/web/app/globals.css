@@ -1,40 +1,45 @@
 /**
  * Gymly palette.
  *
- * --brand is the requested brand colour, #84A98C. Measured against white it
- * reaches only 2.61:1, which fails WCAG AA for body text, so it is never used
- * as a text colour on a light background. Text uses --brand-ink (8.06:1) and
- * headings --brand-deep (10.52:1); --brand is used for surfaces, accents and
- * buttons, where it carries near-black text at 6.81:1.
+ * Black and white is the whole design. Structure, surfaces, borders, form
+ * fields, illustrations and body copy are all neutral greyscale; colour appears
+ * only where it earns attention:
+ *
+ *   - buttons          sage fill, near-black text   (6.16:1)
+ *   - links            darkened sage text           (10.52:1)
+ *   - key headings     darkened sage text           (10.52:1)
+ *   - badges and icons darkened sage on neutral grey (9.37:1)
+ *
+ * The exact #84A98C is only ever a fill that carries near-black text, because
+ * against white it reaches only 2.61:1 and cannot be used as text. --sage-text
+ * is a darkened version of the same hue for anything that is read.
+ *
+ * The background is white unconditionally. An earlier version inverted the
+ * palette under prefers-color-scheme: dark, which left anyone with a dark OS
+ * looking at a dark page, so the palette no longer follows the system setting.
  */
 :root {
-  --brand: #84a98c;
-  --brand-deep: #2f4433;
-  --brand-ink: #3d5641;
-  --brand-tint: #eef3ef;
-  --brand-tint-strong: #dde7e0;
+  /* Neutral greyscale — the default for everything. */
+  --primary: #16181a;
+  --primary-hover: #2f3335;
+  --on-primary: #ffffff;
+  --foreground: #21282b;
+  --muted: #5d6663;
+  --border: #e3e7e5;
+  --surface: #ffffff;
+  /* The page is white throughout. This grey is only ever a hover or pressed
+     state, never a background behind content. */
+  --surface-hover: #f6f7f7;
+  --surface-mid: #d2d7d5;
 
-  --background: #fbfcfb;
-  --foreground: #24302a;
-  --muted: #5b6b62;
-  --border: #d7e0d9;
-  --accent-contrast: #1a2320;
+  /* The secondary accent, used sparingly. */
+  --sage: #84a98c;
+  --sage-hover: #93b59a;
+  --sage-text: #2f4433;
+  --on-sage: #1a2320;
 
   --radius: 0.875rem;
-  --shadow: 0 1px 2px rgb(36 48 42 / 6%), 0 8px 24px rgb(36 48 42 / 8%);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --brand-tint: #1c2620;
-    --brand-tint-strong: #24322a;
-
-    --background: #101614;
-    --foreground: #e6ede8;
-    --muted: #a3b3a9;
-    --border: #2c3a32;
-    --accent-contrast: #101614;
-  }
+  --shadow: 0 1px 2px rgb(33 40 43 / 6%), 0 8px 24px rgb(33 40 43 / 8%);
 }
 
 html,
@@ -45,7 +50,7 @@ body {
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: var(--surface);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -64,20 +69,8 @@ a {
 h1,
 h2,
 h3 {
-  color: var(--brand-deep);
+  color: var(--primary);
   line-height: 1.15;
-}
-
-@media (prefers-color-scheme: dark) {
-  h1,
-  h2,
-  h3 {
-    color: var(--brand);
-  }
-
-  html {
-    color-scheme: dark;
-  }
 }
 
 /* ---------------------------------------------------------------- buttons */
@@ -96,7 +89,7 @@ h3 {
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
-    transform 120ms ease;
+    color 120ms ease;
 }
 
 .btn:disabled {
@@ -104,23 +97,35 @@ h3 {
   cursor: not-allowed;
 }
 
+/* Primary action carries the sage: the one thing colour is spent on. */
 .btn-primary {
-  color: var(--accent-contrast);
-  background: var(--brand);
+  color: var(--on-sage);
+  background: var(--sage);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #93b59a;
+  background: var(--sage-hover);
 }
 
+/* Secondary action: solid black. */
 .btn-secondary {
-  color: var(--brand-deep);
+  color: var(--on-primary);
+  background: var(--primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+/* Tertiary: outline only, for the quietest actions. */
+.btn-ghost {
+  color: var(--foreground);
   background: transparent;
   border-color: var(--border);
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: var(--brand-tint);
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-hover);
 }
 
 .btn-block {
@@ -129,7 +134,7 @@ h3 {
 
 .btn:focus-visible,
 .auth-link:focus-visible {
-  outline: 2px solid var(--brand-deep);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -158,7 +163,7 @@ h3 {
   gap: 0.625rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--brand-deep);
+  color: var(--primary);
 }
 
 .landing-nav-actions {
@@ -185,9 +190,9 @@ h3 {
   padding: 0.375rem 0.875rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--brand-deep);
-  background: var(--brand-tint);
-  border: 1px solid var(--brand-tint-strong);
+  color: var(--sage-text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 999px;
   margin-bottom: 1.25rem;
 }
@@ -199,9 +204,11 @@ h3 {
   margin-bottom: 1rem;
 }
 
+/* The pure sage is only 2.61:1 on white, below the 3:1 needed even for large
+   text, so the accent word uses the darkened sage of the same hue (10.52:1). */
 .hero-title em {
   font-style: normal;
-  color: var(--brand);
+  color: var(--sage-text);
 }
 
 .hero-lede {
@@ -239,7 +246,7 @@ h3 {
 .hero-art > * {
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--brand-tint);
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -254,7 +261,7 @@ h3 {
 }
 
 .features {
-  background: var(--brand-tint);
+  background: var(--surface);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
@@ -285,7 +292,7 @@ h3 {
 
 .feature-card {
   padding: 1.5rem;
-  background: var(--background);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -297,8 +304,9 @@ h3 {
   width: 2.75rem;
   height: 2.75rem;
   margin-bottom: 1rem;
-  color: var(--brand-deep);
-  background: var(--brand-tint);
+  color: var(--sage-text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
 }
 
@@ -325,6 +333,7 @@ h3 {
 .cta-band h2 {
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
+  color: var(--sage-text);
   margin-bottom: 0.75rem;
 }
 
@@ -380,6 +389,10 @@ h3 {
   max-width: 42rem;
 }
 
+.auth-page {
+  background: var(--surface);
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -387,7 +400,7 @@ h3 {
   padding: 2rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--background);
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -411,13 +424,13 @@ h3 {
   padding: 0.625rem 0.75rem;
   font: inherit;
   color: inherit;
-  background: var(--background);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
 }
 
 .auth-input:focus-visible {
-  outline: 2px solid var(--brand-deep);
+  outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
 
@@ -455,12 +468,12 @@ h3 {
 }
 
 .auth-password-toggle:hover:not(:disabled) {
-  color: var(--brand-deep);
-  background: var(--brand-tint);
+  color: var(--primary);
+  background: var(--surface-hover);
 }
 
 .auth-password-toggle:focus-visible {
-  outline: 2px solid var(--brand-deep);
+  outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
 
@@ -484,28 +497,20 @@ h3 {
   margin-top: 0.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  .auth-form-error {
-    color: #ffb4a8;
-    background: #3a1e1a;
-    border-color: #5c2c25;
-  }
-}
-
 .auth-submit {
   margin-top: 1.25rem;
   padding: 0.75rem 1rem;
   font: inherit;
   font-weight: 600;
-  color: var(--accent-contrast);
-  background: var(--brand);
+  color: var(--on-sage);
+  background: var(--sage);
   border: 1px solid transparent;
   border-radius: 0.5rem;
   cursor: pointer;
 }
 
 .auth-submit:hover:not(:disabled) {
-  background: #93b59a;
+  background: var(--sage-hover);
 }
 
 .auth-submit:disabled {
@@ -530,7 +535,7 @@ h3 {
 }
 
 .auth-link {
-  color: var(--brand-deep);
+  color: var(--sage-text);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -566,7 +571,7 @@ h3 {
   padding: 1.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--background);
+  background: var(--surface);
 }
 
 .dashboard-card-title {

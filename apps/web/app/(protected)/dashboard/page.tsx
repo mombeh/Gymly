@@ -16,7 +16,7 @@ export default function DashboardPage() {
             {user === null ? '' : `${user.email} · ${user.role.toLowerCase()}`}
           </p>
         </div>
-        <button type="button" className="auth-submit" onClick={logout}>
+        <button type="button" className="btn btn-ghost" onClick={logout}>
           Sign out
         </button>
       </header>

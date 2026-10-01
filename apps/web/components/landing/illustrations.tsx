@@ -56,28 +56,28 @@ function Dumbbell({
 export function RackArt() {
   return (
     <svg viewBox="0 0 320 400" role="img" aria-label="A two-tier rack of dumbbells in a gym">
-      <rect width="320" height="400" fill="var(--brand-tint-strong)" />
-      <rect y="318" width="320" height="82" fill="var(--brand)" opacity="0.3" />
-      <path d="M0 318h320" stroke="var(--brand-deep)" strokeOpacity="0.2" strokeWidth="2" />
+      <rect width="320" height="400" fill="var(--surface)" />
+      <rect y="318" width="320" height="82" fill="var(--surface-mid)" opacity="0.4" />
+      <path d="M0 318h320" stroke="var(--primary)" strokeOpacity="0.2" strokeWidth="2" />
 
       {/* uprights */}
-      <rect x="54" y="86" width="13" height="236" rx="6.5" fill="var(--brand-deep)" opacity="0.7" />
-      <rect x="253" y="86" width="13" height="236" rx="6.5" fill="var(--brand-deep)" opacity="0.7" />
+      <rect x="54" y="86" width="13" height="236" rx="6.5" fill="var(--primary)" opacity="0.7" />
+      <rect x="253" y="86" width="13" height="236" rx="6.5" fill="var(--primary)" opacity="0.7" />
 
       {/* shelves */}
-      <rect x="42" y="176" width="236" height="11" rx="5.5" fill="var(--brand-deep)" opacity="0.55" />
-      <rect x="42" y="264" width="236" height="11" rx="5.5" fill="var(--brand-deep)" opacity="0.55" />
+      <rect x="42" y="176" width="236" height="11" rx="5.5" fill="var(--primary)" opacity="0.55" />
+      <rect x="42" y="264" width="236" height="11" rx="5.5" fill="var(--primary)" opacity="0.55" />
 
       {/* dumbbells, heaviest at the bottom */}
-      <Dumbbell x={70} y={196} width={62} fill="var(--brand-deep)" />
-      <Dumbbell x={150} y={196} width={50} fill="var(--brand-deep)" opacity="0.75" />
-      <Dumbbell x={66} y={222} width={52} fill="var(--brand-deep)" opacity="0.85" />
-      <Dumbbell x={136} y={222} width={40} fill="var(--brand-deep)" opacity="0.6" />
+      <Dumbbell x={70} y={196} width={62} fill="var(--primary)" />
+      <Dumbbell x={150} y={196} width={50} fill="var(--primary)" opacity="0.75" />
+      <Dumbbell x={66} y={222} width={52} fill="var(--primary)" opacity="0.85" />
+      <Dumbbell x={136} y={222} width={40} fill="var(--primary)" opacity="0.6" />
 
-      <Dumbbell x={74} y={130} width={70} fill="var(--brand-deep)" opacity="0.8" />
-      <Dumbbell x={164} y={130} width={56} fill="var(--brand-deep)" opacity="0.65" />
-      <Dumbbell x={72} y={282} width={78} fill="var(--brand-deep)" />
-      <Dumbbell x={168} y={282} width={60} fill="var(--brand-deep)" opacity="0.9" />
+      <Dumbbell x={74} y={130} width={70} fill="var(--primary)" opacity="0.8" />
+      <Dumbbell x={164} y={130} width={56} fill="var(--primary)" opacity="0.65" />
+      <Dumbbell x={72} y={282} width={78} fill="var(--primary)" />
+      <Dumbbell x={168} y={282} width={60} fill="var(--primary)" opacity="0.9" />
     </svg>
   );
 }
@@ -86,14 +86,14 @@ export function RackArt() {
 export function KettlebellArt() {
   return (
     <svg viewBox="0 0 200 200" role="img" aria-label="A kettlebell">
-      <rect width="200" height="200" fill="var(--brand-tint-strong)" />
-      <ellipse cx="100" cy="164" rx="62" ry="9" fill="var(--brand-deep)" opacity="0.15" />
+      <rect width="200" height="200" fill="var(--surface)" />
+      <ellipse cx="100" cy="164" rx="62" ry="9" fill="var(--primary)" opacity="0.15" />
 
       {/* handle */}
       <path
         d="M74 84V66a26 26 0 0 1 52 0v18"
         fill="none"
-        stroke="var(--brand-deep)"
+        stroke="var(--primary)"
         strokeWidth="11"
         strokeLinecap="round"
         opacity="0.8"
@@ -101,10 +101,10 @@ export function KettlebellArt() {
       {/* body */}
       <path
         d="M62 84h76a10 10 0 0 1 10 11l-4 44a20 20 0 0 1-20 17H76a20 20 0 0 1-20-17l-4-44a10 10 0 0 1 10-11z"
-        fill="var(--brand-deep)"
+        fill="var(--primary)"
         opacity="0.85"
       />
-      <path d="M78 96h44l-3 33H81z" fill="var(--brand)" opacity="0.35" />
+      <path d="M78 96h44l-3 33H81z" fill="var(--surface-mid)" opacity="0.35" />
     </svg>
   );
 }
@@ -113,17 +113,17 @@ export function KettlebellArt() {
 export function MatArt() {
   return (
     <svg viewBox="0 0 200 200" role="img" aria-label="A rolled exercise mat with resistance bands">
-      <rect width="200" height="200" fill="var(--brand-tint-strong)" />
+      <rect width="200" height="200" fill="var(--surface)" />
 
       {/* bands */}
-      <circle cx="64" cy="62" r="20" fill="none" stroke="var(--brand-deep)" strokeWidth="7" opacity="0.35" />
-      <circle cx="64" cy="62" r="30" fill="none" stroke="var(--brand-deep)" strokeWidth="7" opacity="0.2" />
+      <circle cx="64" cy="62" r="20" fill="none" stroke="var(--primary)" strokeWidth="7" opacity="0.35" />
+      <circle cx="64" cy="62" r="30" fill="none" stroke="var(--primary)" strokeWidth="7" opacity="0.2" />
 
       {/* rolled mat */}
-      <rect x="52" y="96" width="120" height="62" rx="31" fill="var(--brand-deep)" opacity="0.85" />
-      <ellipse cx="82" cy="127" rx="15" ry="31" fill="var(--brand-tint-strong)" />
-      <ellipse cx="82" cy="127" rx="8" ry="20" fill="var(--brand-deep)" opacity="0.35" />
-      <path d="M104 100v54M124 100v54M144 100v54" stroke="var(--brand)" strokeWidth="4" opacity="0.25" />
+      <rect x="52" y="96" width="120" height="62" rx="31" fill="var(--primary)" opacity="0.85" />
+      <ellipse cx="82" cy="127" rx="15" ry="31" fill="var(--surface)" />
+      <ellipse cx="82" cy="127" rx="8" ry="20" fill="var(--primary)" opacity="0.35" />
+      <path d="M104 100v54M124 100v54M144 100v54" stroke="var(--surface-mid)" strokeWidth="4" opacity="0.25" />
     </svg>
   );
 }
@@ -197,10 +197,10 @@ export function ShieldIcon({ size = 22 }: IconProps) {
 export function LogoMark({ size = 32 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="9" fill="var(--brand)" />
+      <rect width="32" height="32" rx="9" fill="var(--primary)" />
       <path
         d="M9 16h14M9 16v-3.5M9 16v3.5M23 16v-3.5M23 16v3.5M12.5 16v-2M19.5 16v2"
-        stroke="var(--accent-contrast)"
+        stroke="var(--on-primary)"
         strokeWidth="2.4"
         strokeLinecap="round"
       />
