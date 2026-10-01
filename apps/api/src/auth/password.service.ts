@@ -1,17 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcryptjs';
 
 /** bcrypt work factor. 12 is a current default and costs roughly 0.4s per hash. */
 export const BCRYPT_ROUNDS = 12;
 
+let timingEqualisationHash: Promise<string> | undefined;
+
 /**
- * A real bcrypt digest of a randomly generated string that is never used as a
- * password. Verifying against it when no user was found makes the "unknown
- * email" path take roughly as long as the "wrong password" path, so response
- * time cannot be used to enumerate registered accounts.
+ * A real bcrypt digest of a randomly generated string that is never a password.
+ *
+ * Generated on first use rather than committed as a literal, so its cost factor
+ * always matches BCRYPT_ROUNDS. A hardcoded digest would silently drift out of
+ * step if the work factor changed, reintroducing the timing difference the
+ * dummy comparison exists to remove.
  */
-export const TIMING_EQUALISATION_HASH =
-  '$2b$12$j6Dv458mbQA7tX3xj7J7YehB/wWtIi6vYmJwxVJWFUQtEgroZND9q';
+export function getTimingEqualisationHash(): Promise<string> {
+  timingEqualisationHash ??= bcrypt.hash(randomBytes(32).toString('hex'), BCRYPT_ROUNDS);
+
+  return timingEqualisationHash;
+}
 
 @Injectable()
 export class PasswordService {
@@ -33,6 +41,6 @@ export class PasswordService {
    * matched, so a missing account is not distinguishable by latency.
    */
   async simulateVerification(plainText: string): Promise<void> {
-    await bcrypt.compare(plainText, TIMING_EQUALISATION_HASH);
+    await bcrypt.compare(plainText, await getTimingEqualisationHash());
   }
 }

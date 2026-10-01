@@ -35,31 +35,25 @@ function createPrismaStub(user: unknown): {
   };
 }
 
-function createPasswordStub(matches: boolean) {
-  return {
-    hash: jest.fn(),
-    verify: jest.fn(() => Promise.resolve(matches)),
-    simulateVerification: jest.fn(() => Promise.resolve()),
-  } as unknown as PasswordService;
-}
+function createService(user: unknown, passwordMatches: boolean) {
+  const { prisma, findFirst, findUnique } = createPrismaStub(user);
+  const verify = jest.fn(() => Promise.resolve(passwordMatches));
+  const simulateVerification = jest.fn(() => Promise.resolve());
+  const password = { hash: jest.fn(), verify, simulateVerification } as unknown as PasswordService;
 
-function createTokenStub() {
-  return {
-    issue: jest.fn(() => Promise.resolve('signed.jwt.token')),
+  const issue = jest.fn(() => Promise.resolve('signed.jwt.token'));
+  const tokens = {
+    issue,
     verify: jest.fn(),
     expiresInSeconds: 900,
   } as unknown as TokenService;
-}
-
-function createService(user: unknown, passwordMatches: boolean) {
-  const { prisma, findFirst, findUnique } = createPrismaStub(user);
-  const password = createPasswordStub(passwordMatches);
-  const tokens = createTokenStub();
 
   return {
     service: new AuthService(prisma, password, tokens),
-    password,
-    tokens,
+    // Raw mocks are returned separately so assertions never reference a method
+    // through a class-typed object.
+    password: { verify, simulateVerification },
+    tokens: { issue },
     findFirst,
     findUnique,
   };

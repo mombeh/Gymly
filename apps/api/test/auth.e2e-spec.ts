@@ -146,8 +146,13 @@ describe('Authentication (e2e)', () => {
         .send({ email: OWNER.email, password: 'not-the-password' })
         .expect(401);
 
-      // Identical status and body, so a caller cannot tell the two apart.
-      expect(unknown.body).toEqual(wrongPassword.body);
+      // Identical status and message, so a caller cannot tell the two apart.
+      // The timestamp is the only permitted difference.
+      const { timestamp: _unknownAt, ...unknownBody } = unknown.body as Record<string, unknown>;
+      const { timestamp: _wrongAt, ...wrongBody } = wrongPassword.body as Record<string, unknown>;
+
+      expect(unknownBody).toEqual(wrongBody);
+      expect(unknownBody['message']).toBe('Invalid email or password');
     });
 
     it('rejects a suspended account with 403', async () => {

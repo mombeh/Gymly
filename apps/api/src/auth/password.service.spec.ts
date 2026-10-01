@@ -1,4 +1,8 @@
-import { BCRYPT_ROUNDS, PasswordService, TIMING_EQUALISATION_HASH } from './password.service';
+import {
+  BCRYPT_ROUNDS,
+  getTimingEqualisationHash,
+  PasswordService,
+} from './password.service';
 
 describe('PasswordService', () => {
   const service = new PasswordService();
@@ -53,7 +57,23 @@ describe('PasswordService', () => {
     });
 
     it('never matches, so it cannot stand in for a real account', async () => {
-      await expect(service.verify(plainText, TIMING_EQUALISATION_HASH)).resolves.toBe(false);
+      const dummyHash = await getTimingEqualisationHash();
+
+      await expect(service.verify(plainText, dummyHash)).resolves.toBe(false);
+    });
+  });
+
+  describe('getTimingEqualisationHash', () => {
+    it('uses the same work factor as real hashes, so timings are comparable', async () => {
+      // A committed literal would drift if BCRYPT_ROUNDS changed; generating it
+      // is what keeps the unknown-email path as slow as the wrong-password path.
+      const dummyHash = await getTimingEqualisationHash();
+
+      expect(dummyHash).toMatch(new RegExp(`^\\$2[aby]\\$${BCRYPT_ROUNDS}\\$`));
+    });
+
+    it('is cached, so only the first miss pays for generation', async () => {
+      await expect(getTimingEqualisationHash()).resolves.toBe(await getTimingEqualisationHash());
     });
   });
 });
