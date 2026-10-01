@@ -12,7 +12,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { ApiError, apiRequest } from './api-client';
+import { apiRequest } from './api-client';
 import { clearToken, readToken, writeToken } from './auth-storage';
 import type { CurrentUserResponse, LoginResponse, PublicUser } from './api-types';
 
@@ -113,8 +113,4 @@ export function useAuth(): AuthContextValue {
   }
 
   return context;
-}
-
-export function isApiError(error: unknown): error is ApiError {
-  return error instanceof ApiError;
 }

@@ -1,20 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { ApiError, NetworkError, apiRequest, getApiBaseUrl } from '../lib/api-client';
+import { installFetchMock, jsonResponse, type RecordedCall } from './test-utils';
 
-function jsonResponse(status: number, body?: unknown): Response {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    text: async () => (body === undefined ? '' : JSON.stringify(body)),
-  } as unknown as Response;
-}
+let fetchMock: Mock;
+let recordedCall: (index?: number) => RecordedCall;
 
-const fetchMock = vi.fn();
-
+// Installed per test because afterEach removes the global stub.
 beforeEach(() => {
-  fetchMock.mockReset();
-  vi.stubGlobal('fetch', fetchMock);
+  const handle = installFetchMock();
+  fetchMock = handle.fetchMock;
+  recordedCall = handle.recordedCall;
 });
 
 afterEach(() => {
@@ -52,11 +48,11 @@ describe('apiRequest', () => {
       accessToken: 'abc',
     });
 
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('http://localhost:3000/api/auth/login');
-    expect(init.method).toBe('POST');
-    expect(init.headers['Content-Type']).toBe('application/json');
-    expect(JSON.parse(init.body)).toEqual({ email: 'a@b.c' });
+    const call = recordedCall();
+    expect(call.url).toBe('http://localhost:3000/api/auth/login');
+    expect(call.method).toBe('POST');
+    expect(call.headers['Content-Type']).toBe('application/json');
+    expect(call.json()).toEqual({ email: 'a@b.c' });
   });
 
   it('attaches the bearer token when one is supplied', async () => {
@@ -64,7 +60,7 @@ describe('apiRequest', () => {
 
     await apiRequest('/auth/me', { token: 'token-123' });
 
-    expect(fetchMock.mock.calls[0][1].headers['Authorization']).toBe('Bearer token-123');
+    expect(recordedCall().headers['Authorization']).toBe('Bearer token-123');
   });
 
   it('omits the Authorization header when there is no token', async () => {
@@ -72,7 +68,7 @@ describe('apiRequest', () => {
 
     await apiRequest('/auth/login', { method: 'POST' });
 
-    expect(fetchMock.mock.calls[0][1].headers['Authorization']).toBeUndefined();
+    expect(recordedCall().headers['Authorization']).toBeUndefined();
   });
 
   it('surfaces a single-message API error with its status', async () => {
