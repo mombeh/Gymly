@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, type JwtSignOptions } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -21,7 +21,10 @@ import type { AppConfiguration } from '../config/configuration';
           secret: config.auth.jwtSecret,
           signOptions: {
             algorithm: 'HS256',
-            expiresIn: config.auth.jwtExpiresIn,
+            // JWT_EXPIRES_IN is validated as \d+[smhd]? by the env validator.
+            // jsonwebtoken types this as the `ms` package's StringValue
+            // template literal, which a plain string cannot satisfy.
+            expiresIn: config.auth.jwtExpiresIn as JwtSignOptions['expiresIn'],
           },
           // Pinning the accepted algorithm on verify blocks algorithm confusion.
           verifyOptions: { algorithms: ['HS256'] },

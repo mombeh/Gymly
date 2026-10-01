@@ -3,8 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { AppConfiguration } from '../config/configuration';
 import type { AuthTokenPayload } from './auth.types';
+import type { UserRole } from '../generated/prisma/client';
 
-type UserForToken = Pick<AuthTokenPayload, 'id' | 'email' | 'role'>;
+/** Identity fields the token is minted from. */
+interface UserForToken {
+  id: string;
+  email: string;
+  role: UserRole;
+}
 
 @Injectable()
 export class TokenService {
