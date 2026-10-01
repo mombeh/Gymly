@@ -7,6 +7,8 @@ export interface AppEnv {
   DATABASE_URL: string;
   FRONTEND_URL: string[];
   CORS_CREDENTIALS: boolean;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
 }
 
 export const SETUP_HINT =
@@ -20,9 +22,13 @@ const DEFAULTS = {
   API_PREFIX: 'api',
   FRONTEND_URL: 'http://localhost:8000',
   CORS_CREDENTIALS: true,
+  JWT_EXPIRES_IN: '15m',
 } as const;
 
 const SUPPORTED_DATABASE_PROTOCOLS = ['postgresql://', 'postgres://'];
+
+/** HS256 signing keys need enough entropy to resist brute force. */
+export const MIN_JWT_SECRET_LENGTH = 32;
 
 /** Collects every problem so one boot reports all of them, not just the first. */
 class EnvValidationError extends Error {
