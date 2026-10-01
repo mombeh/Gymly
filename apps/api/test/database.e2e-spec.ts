@@ -138,7 +138,7 @@ describe('User model', () => {
   });
 
   it('accepts every declared role and status', async () => {
-    const roles = ['OWNER', 'ADMIN', 'STAFF', 'MEMBER'] as const;
+    const roles = ['OWNER', 'RECEPTIONIST', 'TRAINER', 'MEMBER'] as const;
     const statuses = ['PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED'] as const;
 
     for (const [index, role] of roles.entries()) {

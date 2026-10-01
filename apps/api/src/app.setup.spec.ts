@@ -73,4 +73,15 @@ describe('global validation pipe', () => {
     expect(validationPipeOptions.forbidNonWhitelisted).toBe(true);
     expect(validationPipeOptions.transform).toBe(true);
   });
+
+  it('keeps implicit conversion off so wrong types are rejected, not coerced', async () => {
+    // An object would stringify to "[object Object]" if conversion were on,
+    // which would let a malformed request reach the handler.
+    await expect(
+      pipe.transform(
+        { name: 'Grace', email: 'grace@gymly.test', age: { $ne: null } },
+        bodyMetadata,
+      ),
+    ).rejects.toThrow();
+  });
 });

@@ -16,7 +16,13 @@ export const validationPipeOptions: ValidationPipeOptions = {
   whitelist: true,
   forbidNonWhitelisted: true,
   transform: true,
-  transformOptions: { enableImplicitConversion: true },
+  transformOptions: {
+    // Implicit conversion is deliberately off. With it enabled, class-transformer
+    // coerces unexpected input to strings, so a body like { password: {...} }
+    // would satisfy @IsString() and reach the handler instead of being rejected.
+    // DTOs that need coercion should declare it with an explicit @Type().
+    enableImplicitConversion: false,
+  },
 };
 
 /**

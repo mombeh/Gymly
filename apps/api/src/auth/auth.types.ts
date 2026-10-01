@@ -1,0 +1,65 @@
+import type { UserRole, UserStatus } from '../generated/prisma/client';
+
+export const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password';
+export const AUTHENTICATION_REQUIRED_MESSAGE = 'Authentication required';
+
+/**
+ * Claims carried by an access token. `sub` is the user id; the rest is a
+ * convenience copy so the frontend does not need a lookup to render a name.
+ * Role and status are re-read from the database on every protected request
+ * rather than trusted from the token, so a token cannot outlive a revoked role.
+ */
+export interface AuthTokenPayload {
+  sub: string;
+  email: string;
+  role: UserRole;
+  iat?: number;
+  exp?: number;
+}
+
+/** Identity attached to the request by JwtAuthGuard. */
+export interface AuthenticatedUser {
+  sub: string;
+  email: string;
+  role: UserRole;
+}
+
+/**
+ * The only user shape allowed to leave the API.
+ *
+ * Fields are listed explicitly rather than spreading a database row, so
+ * passwordHash cannot be returned even by accident.
+ */
+export interface PublicUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  status: UserStatus;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  tokenType: 'Bearer';
+  /** Lifetime in seconds, so the client can schedule a refresh. */
+  expiresIn: number;
+  user: PublicUser;
+}
+
+export interface CurrentUserResponse {
+  user: PublicUser;
+}
+
+type UserRow = Pick<PublicUser, 'id' | 'email' | 'firstName' | 'lastName' | 'role' | 'status'>;
+
+export function toPublicUser(user: UserRow): PublicUser {
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    status: user.status,
+  };
+}

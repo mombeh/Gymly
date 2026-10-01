@@ -16,11 +16,12 @@ datasource db {
   provider = "postgresql"
 }
 
-/// Application-level access level of a login identity.
+/// Fixed set of Gymly access levels. Member is defined but unused in V1
+/// (no member self-service yet); it is retained for the authorization model.
 enum UserRole {
   OWNER
-  ADMIN
-  STAFF
+  RECEPTIONIST
+  TRAINER
   MEMBER
 }
 

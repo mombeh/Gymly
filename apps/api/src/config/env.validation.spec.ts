@@ -1,11 +1,12 @@
-import { validateEnv } from './env.validation';
+import { MIN_JWT_SECRET_LENGTH, validateEnv } from './env.validation';
 
 const validEnv = {
   DATABASE_URL: 'postgresql://gymly:secret@127.0.0.1:5432/gymly?schema=public',
+  JWT_SECRET: 'a-test-signing-key-that-is-at-least-32-characters',
 };
 
 describe('validateEnv', () => {
-  it('applies documented defaults when only the required value is set', () => {
+  it('applies documented defaults when only the required values are set', () => {
     expect(validateEnv({ ...validEnv })).toEqual({
       NODE_ENV: 'development',
       PORT: 3000,
@@ -13,6 +14,8 @@ describe('validateEnv', () => {
       DATABASE_URL: validEnv.DATABASE_URL,
       FRONTEND_URL: ['http://localhost:8000'],
       CORS_CREDENTIALS: true,
+      JWT_SECRET: validEnv.JWT_SECRET,
+      JWT_EXPIRES_IN: '15m',
     });
   });
 
@@ -29,7 +32,7 @@ describe('validateEnv', () => {
 
     it('accepts the postgres:// alias', () => {
       expect(
-        validateEnv({ DATABASE_URL: 'postgres://u:p@localhost:5432/gymly' }).DATABASE_URL,
+        validateEnv({ ...validEnv, DATABASE_URL: 'postgres://u:p@localhost:5432/gymly' }).DATABASE_URL,
       ).toBe('postgres://u:p@localhost:5432/gymly');
     });
 
@@ -108,6 +111,42 @@ describe('validateEnv', () => {
     it('rejects an unknown environment', () => {
       expect(() => validateEnv({ ...validEnv, NODE_ENV: 'staging' })).toThrow(
         'NODE_ENV must be one of',
+      );
+    });
+  });
+
+  describe('JWT_SECRET', () => {
+    it('is required, with no default that could be committed', () => {
+      expect(() => validateEnv({ DATABASE_URL: validEnv.DATABASE_URL })).toThrow(
+        'JWT_SECRET is required',
+      );
+    });
+
+    it(`requires at least ${MIN_JWT_SECRET_LENGTH} characters`, () => {
+      expect(() => validateEnv({ ...validEnv, JWT_SECRET: 'too-short' })).toThrow(
+        `JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters`,
+      );
+    });
+
+    it('trims surrounding whitespace', () => {
+      expect(
+        validateEnv({ ...validEnv, JWT_SECRET: `  ${validEnv.JWT_SECRET}  ` }).JWT_SECRET,
+      ).toBe(validEnv.JWT_SECRET);
+    });
+  });
+
+  describe('JWT_EXPIRES_IN', () => {
+    it('defaults to 15m', () => {
+      expect(validateEnv({ ...validEnv }).JWT_EXPIRES_IN).toBe('15m');
+    });
+
+    it.each(['30s', '15m', '1h', '7d', '900'])('accepts %s', (value) => {
+      expect(validateEnv({ ...validEnv, JWT_EXPIRES_IN: value }).JWT_EXPIRES_IN).toBe(value);
+    });
+
+    it.each(['15 minutes', '1h30m', '-5m', 'soon'])('rejects %p', (value) => {
+      expect(() => validateEnv({ ...validEnv, JWT_EXPIRES_IN: value })).toThrow(
+        'JWT_EXPIRES_IN must be',
       );
     });
   });

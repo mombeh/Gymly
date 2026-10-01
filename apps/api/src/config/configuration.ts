@@ -6,6 +6,11 @@ export interface CorsConfiguration {
   credentials: boolean;
 }
 
+export interface AuthConfiguration {
+  jwtSecret: string;
+  jwtExpiresIn: string;
+}
+
 export interface AppConfiguration {
   env: NodeEnvironment;
   port: number;
@@ -14,6 +19,7 @@ export interface AppConfiguration {
   database: {
     url: string;
   };
+  auth: AuthConfiguration;
 }
 
 /**
@@ -40,6 +46,10 @@ export const appConfig = registerAs(
       },
       database: {
         url: env.DATABASE_URL,
+      },
+      auth: {
+        jwtSecret: env.JWT_SECRET,
+        jwtExpiresIn: env.JWT_EXPIRES_IN,
       },
     };
   },

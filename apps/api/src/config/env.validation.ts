@@ -7,6 +7,8 @@ export interface AppEnv {
   DATABASE_URL: string;
   FRONTEND_URL: string[];
   CORS_CREDENTIALS: boolean;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
 }
 
 export const SETUP_HINT =
@@ -20,9 +22,13 @@ const DEFAULTS = {
   API_PREFIX: 'api',
   FRONTEND_URL: 'http://localhost:8000',
   CORS_CREDENTIALS: true,
+  JWT_EXPIRES_IN: '15m',
 } as const;
 
 const SUPPORTED_DATABASE_PROTOCOLS = ['postgresql://', 'postgres://'];
+
+/** HS256 signing keys need enough entropy to resist brute force. */
+export const MIN_JWT_SECRET_LENGTH = 32;
 
 /** Collects every problem so one boot reports all of them, not just the first. */
 class EnvValidationError extends Error {
@@ -156,6 +162,64 @@ function readFrontendUrls(raw: Record<string, unknown>, problems: string[]): str
   return [...new Set(origins)];
 }
 
+/**
+ * The JWT signing key is required and must carry real entropy. There is no
+ * default and no committed fallback, so the app cannot start with a secret
+ * that is visible in source control.
+ */
+function readJwtSecret(raw: Record<string, unknown>, problems: string[]): string {
+  const value = raw['JWT_SECRET'];
+
+  if (value === undefined || value === null || value === '') {
+    problems.push(
+      'JWT_SECRET is required. Generate one with: openssl rand -base64 48',
+    );
+    return '';
+  }
+
+  if (typeof value !== 'string') {
+    problems.push('JWT_SECRET must be a string.');
+    return '';
+  }
+
+  const trimmed = value.trim();
+
+  if (trimmed.length < MIN_JWT_SECRET_LENGTH) {
+    problems.push(
+      `JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters, received ${trimmed.length}.`,
+    );
+  }
+
+  return trimmed;
+}
+
+/** Accepts a plain number of seconds or a suffixed duration such as 15m, 1h, 7d. */
+function readJwtExpiresIn(raw: Record<string, unknown>, problems: string[]): string {
+  const value = raw['JWT_EXPIRES_IN'];
+
+  if (value === undefined || value === null || value === '') {
+    return DEFAULTS.JWT_EXPIRES_IN;
+  }
+
+  const duration = typeof value === 'number' ? String(value) : value;
+
+  if (typeof duration !== 'string') {
+    problems.push('JWT_EXPIRES_IN must be a string such as "15m" or a number of seconds.');
+    return DEFAULTS.JWT_EXPIRES_IN;
+  }
+
+  const trimmed = duration.trim();
+
+  if (!/^\d+[smhd]?$/.test(trimmed)) {
+    problems.push(
+      `JWT_EXPIRES_IN must be a number of seconds or a duration like "15m"/"1h"/"7d", received "${describeValue(duration)}".`,
+    );
+    return DEFAULTS.JWT_EXPIRES_IN;
+  }
+
+  return trimmed;
+}
+
 function readBoolean(
   raw: Record<string, unknown>,
   key: string,
@@ -204,6 +268,8 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv {
     DATABASE_URL: readDatabaseUrl(raw, problems),
     FRONTEND_URL: readFrontendUrls(raw, problems),
     CORS_CREDENTIALS: readBoolean(raw, 'CORS_CREDENTIALS', DEFAULTS.CORS_CREDENTIALS, problems),
+    JWT_SECRET: readJwtSecret(raw, problems),
+    JWT_EXPIRES_IN: readJwtExpiresIn(raw, problems),
   };
 
   if (problems.length > 0) {
