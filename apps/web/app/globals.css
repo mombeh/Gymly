@@ -35,7 +35,6 @@ a {
 .imgDark {
   display: none;
 }
-
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
@@ -44,7 +43,158 @@ a {
   .imgLight {
     display: none;
   }
+
   .imgDark {
     display: unset;
   }
+}
+
+/* Authentication and the signed-in area. */
+.auth-page,
+.dashboard {
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  max-width: 42rem;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 2rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.auth-subtitle {
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+  margin: 0 0 1rem;
+}
+
+.auth-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.auth-input {
+  padding: 0.625rem 0.75rem;
+  font: inherit;
+  color: inherit;
+  background: var(--background);
+  border: 1px solid color-mix(in srgb, var(--foreground) 25%, transparent);
+  border-radius: 0.5rem;
+}
+
+.auth-input:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 1px;
+}
+
+.auth-input[aria-invalid='true'] {
+  border-color: #dc2626;
+}
+
+.auth-field-error {
+  font-size: 0.8125rem;
+  color: #dc2626;
+  margin: 0.125rem 0 0;
+}
+
+.auth-form-error {
+  font-size: 0.875rem;
+  color: #dc2626;
+  background: color-mix(in srgb, #dc2626 10%, transparent);
+  border: 1px solid color-mix(in srgb, #dc2626 35%, transparent);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  margin: 0.75rem 0 0;
+}
+
+.auth-submit {
+  margin-top: 1.25rem;
+  padding: 0.625rem 1rem;
+  font: inherit;
+  font-weight: 500;
+  color: var(--background);
+  background: var(--foreground);
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.dashboard-subtitle {
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+  margin: 0.25rem 0 0;
+}
+
+.dashboard-card {
+  padding: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+  border-radius: 0.75rem;
+}
+
+.dashboard-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+.dashboard-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.dashboard-details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9375rem;
+}
+
+.dashboard-details dt {
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+}
+
+.dashboard-details dd {
+  margin: 0;
 }

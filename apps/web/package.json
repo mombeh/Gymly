@@ -8,8 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
-    "format": "prettier --write \"app/**/*.tsx\" \"app/**/*.ts\"",
-    "check-types": "next typegen && tsc --noEmit"
+    "format": "prettier --write \"app/**/*.tsx\" \"app/**/*.ts\" \"components/**/*.tsx\" \"lib/**/*.ts\" \"lib/**/*.tsx\"",
+    "check-types": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@repo/ui": "*",
