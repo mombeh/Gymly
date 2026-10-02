@@ -8,6 +8,7 @@ import { validateEnv } from './config/env.validation';
 import { AuthModule } from './auth/auth.module';
 import { AccessModule } from './access/access.module';
 import { HealthModule } from './health/health.module';
+import { MembersModule } from './members/members.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -33,6 +34,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     AuthModule,
     AccessModule,
     HealthModule,
+    MembersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
