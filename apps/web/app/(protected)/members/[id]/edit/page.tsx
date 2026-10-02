@@ -8,7 +8,7 @@ import { MemberForm } from '../../../../../components/members/member-form';
 import { readToken } from '../../../../../lib/auth-storage';
 import { describeMemberError, getMember, updateMember } from '../../../../../lib/members-api';
 import type { MemberFormValues } from '../../../../../lib/member-validation';
-import type { Gender, Member } from '../../../../../lib/member-types';
+import type { Member } from '../../../../../lib/member-types';
 
 type LoadState = 'loading' | 'ready' | 'error';
 
@@ -82,7 +82,7 @@ export default function EditMemberPage({ params }: { params: Promise<{ id: strin
           phone: values.phone,
           email: values.email,
           dateOfBirth: values.dateOfBirth,
-          gender: values.gender as Gender | '',
+          gender: values.gender,
           address: values.address,
           emergencyContact: values.emergencyContact,
         },

@@ -6,6 +6,8 @@
  * request regardless, and its message wins if the two ever disagree.
  */
 
+import type { Gender } from './member-types';
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Matches the API's members_phone_digit_count CHECK constraint. */
@@ -21,7 +23,8 @@ export interface MemberFormValues {
   phone: string;
   email: string;
   dateOfBirth: string;
-  gender: string;
+  /** An empty string means "not stated", matching the select's first option. */
+  gender: Gender | '';
   address: string;
   emergencyContact: string;
 }

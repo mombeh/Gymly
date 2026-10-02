@@ -118,7 +118,7 @@ export function updateMember(id: string, input: UpdateMemberInput, token: string
 
   if (input.email !== undefined) body['email'] = input.email?.trim() || null;
   if (input.dateOfBirth !== undefined) body['dateOfBirth'] = input.dateOfBirth || null;
-  if (input.gender !== undefined) body['gender'] = input.gender || null;
+  if (input.gender !== undefined && input.gender !== null) body['gender'] = input.gender;
   if (input.address !== undefined) body['address'] = input.address?.trim() || null;
   if (input.emergencyContact !== undefined) {
     body['emergencyContact'] = input.emergencyContact?.trim() || null;

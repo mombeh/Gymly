@@ -68,7 +68,8 @@ export interface UpdateMemberInput {
   phone?: string;
   email?: string | null;
   dateOfBirth?: string | null;
-  gender?: Gender | null;
+  /** An empty string means "not stated", which the API stores as null. */
+  gender?: Gender | '' | null;
   address?: string | null;
   emergencyContact?: string | null;
 }

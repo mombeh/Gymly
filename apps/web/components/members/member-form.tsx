@@ -173,7 +173,7 @@ export function MemberForm({
             name="gender"
             className="field-input"
             value={values.gender}
-            onChange={(event) => set('gender', event.target.value)}
+            onChange={(event) => set('gender', event.target.value as MemberFormValues['gender'])}
             disabled={isSubmitting}
             aria-invalid={errors.gender !== undefined}
             aria-describedby={errors.gender !== undefined ? 'gender-error' : undefined}

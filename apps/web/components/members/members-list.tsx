@@ -267,7 +267,7 @@ export function MembersList() {
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
-                disabled={page <= 1 || state === 'loading'}
+                disabled={page <= 1}
               >
                 Previous
               </button>
@@ -278,7 +278,7 @@ export function MembersList() {
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setPage((current) => current + 1)}
-                disabled={page >= pageCount || state === 'loading'}
+                disabled={page >= pageCount}
               >
                 Next
               </button>
