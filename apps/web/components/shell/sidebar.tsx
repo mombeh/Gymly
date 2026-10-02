@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { LogoMark } from '../landing/illustrations';
+import { useAuth } from '../../lib/auth-context';
 import { visibleNavItems, type Role } from '../../lib/nav-items';
 
 interface SidebarProps {
@@ -15,15 +16,17 @@ interface SidebarProps {
 export function Sidebar({ role, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const items = visibleNavItems(role);
+  const { logout } = useAuth();
 
   return (
-    <nav className="shell-sidebar" aria-label="Main">
-      <Link className="shell-brand" href="/dashboard" onClick={onNavigate}>
-        <LogoMark size={28} />
-        <span>Gymly</span>
-      </Link>
+    <div className="shell-sidebar">
+      <nav aria-label="Main">
+        <Link className="shell-brand" href="/dashboard" onClick={onNavigate}>
+          <LogoMark size={28} />
+          <span>Gymly</span>
+        </Link>
 
-      <ul className="shell-nav">
+        <ul className="shell-nav">
         {items.map((item) => {
           // Exact match for the dashboard, prefix match elsewhere so a section
           // stays highlighted while browsing its own sub-pages.
@@ -43,7 +46,14 @@ export function Sidebar({ role, onNavigate }: SidebarProps) {
             </li>
           );
         })}
-      </ul>
-    </nav>
+        </ul>
+      </nav>
+
+      <div className="shell-sidebar-footer">
+        <button type="button" className="btn btn-ghost shell-logout" onClick={logout}>
+          Sign out
+        </button>
+      </div>
+    </div>
   );
 }

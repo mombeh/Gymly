@@ -9,13 +9,14 @@ interface HeaderProps {
 }
 
 /**
- * Page header, the account area and the logout action.
+ * Page header and the account area.
  *
  * Reads the signed-in person from the auth context rather than taking props, so
- * the identity shown here is always the one the session actually holds.
+ * the identity shown here is always the one the session actually holds. Sign
+ * out lives in the sidebar footer, so it is reachable from every width.
  */
 export function Header({ role, onOpenMenu }: HeaderProps) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="shell-header">
@@ -49,10 +50,6 @@ export function Header({ role, onOpenMenu }: HeaderProps) {
           </span>
           <span className="shell-account-role">{roleLabel(role)}</span>
         </span>
-
-        <button type="button" className="btn btn-ghost shell-logout" onClick={logout}>
-          Sign out
-        </button>
       </div>
     </header>
   );
