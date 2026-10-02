@@ -22,6 +22,8 @@ export function MembersList() {
   const [includeInactive, setIncludeInactive] = useState(true);
   const [state, setState] = useState<LoadState>('loading');
   const [error, setError] = useState<string | null>(null);
+  /** Bumped by "Try again" so a retry re-runs the effect with the same filters. */
+  const [reload, setReload] = useState(0);
 
   const load = useCallback(
     async (signal: AbortSignal) => {
@@ -72,7 +74,7 @@ export function MembersList() {
     void load(controller.signal);
 
     return () => controller.abort();
-  }, [load]);
+  }, [load, reload]);
 
   // A new search starts from the first page; staying on page 3 of a shorter
   // result set would show an empty table for a query that has matches.
@@ -177,7 +179,11 @@ export function MembersList() {
       {state === 'error' && error !== null && (
         <div className="state-message state-error" role="alert">
           <p>{error}</p>
-          <button type="button" className="btn btn-ghost" onClick={() => setPage((current) => current)}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => setReload((current) => current + 1)}
+          >
             Try again
           </button>
         </div>
