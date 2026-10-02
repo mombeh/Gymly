@@ -6,6 +6,8 @@
  * only where it earns attention:
  *
  *   - buttons          sage fill, near-black text   (6.16:1)
+ *   - app sidebar      sage fill, near-black text   (6.16:1)
+ *   - app header       sage fill, near-black text   (6.16:1)
  *   - links            darkened sage text           (10.52:1)
  *   - key headings     darkened sage text           (10.52:1)
  *   - badges and icons darkened sage on neutral grey (9.37:1)
@@ -37,6 +39,10 @@
   --sage-hover: #93b59a;
   --sage-text: #2f4433;
   --on-sage: #1a2320;
+  /* Readable shades on the sage fill used by the app sidebar and header. */
+  --on-sage-soft: #2a3730;
+  --sage-deep: #73957d;
+  --sage-line: rgb(26 35 32 / 16%);
 
   --radius: 0.875rem;
   --shadow: 0 1px 2px rgb(33 40 43 / 6%), 0 8px 24px rgb(33 40 43 / 8%);
@@ -571,8 +577,8 @@ h3 {
 }
 
 .shell-sidebar-wrap {
-  border-right: 1px solid var(--border);
-  background: var(--surface);
+  border-right: 1px solid var(--sage-line);
+  background: var(--sage);
 }
 
 .shell-sidebar {
@@ -593,7 +599,7 @@ h3 {
   padding: 0.25rem 0.5rem;
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--on-sage);
 }
 
 .shell-nav {
@@ -610,22 +616,22 @@ h3 {
   padding: 0.5rem 0.75rem;
   font-size: 0.9375rem;
   border-radius: 0.5rem;
-  color: var(--foreground);
+  color: var(--on-sage);
 }
 
 .shell-nav-link:hover {
-  background: var(--surface-hover);
+  background: var(--sage-deep);
 }
 
 .shell-nav-link[aria-current='page'] {
   font-weight: 600;
-  color: var(--primary);
-  background: var(--surface-hover);
-  box-shadow: inset 2px 0 0 var(--sage);
+  color: var(--sage);
+  background: rgb(26 35 32 / 88%);
+  box-shadow: inset 2px 0 0 var(--on-sage);
 }
 
 .shell-nav-link:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--on-sage);
   outline-offset: -2px;
 }
 
@@ -644,8 +650,8 @@ h3 {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1.5rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--sage);
+  border-bottom: 1px solid var(--sage-line);
 }
 
 .shell-menu-button {
@@ -654,9 +660,9 @@ h3 {
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  color: var(--primary);
+  color: var(--on-sage);
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--sage-line);
   border-radius: 0.5rem;
   cursor: pointer;
 }
@@ -677,9 +683,9 @@ h3 {
   flex: 0 0 auto;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--primary);
-  background: var(--surface-hover);
-  border: 1px solid var(--border);
+  color: var(--on-sage);
+  background: rgb(255 255 255 / 40%);
+  border: 1px solid var(--sage-line);
   border-radius: 50%;
 }
 
@@ -692,16 +698,26 @@ h3 {
 .shell-account-name {
   font-size: 0.9375rem;
   font-weight: 600;
+  color: var(--on-sage);
 }
 
 .shell-account-role {
   font-size: 0.75rem;
-  color: var(--sage-text);
+  color: var(--on-sage-soft);
   font-weight: 600;
 }
 
+/* The ghost button sits on the sage header, so it needs its own readable
+   outline instead of the neutral grey one used on white. */
 .shell-logout {
   padding: 0.5rem 0.875rem;
+  color: var(--on-sage);
+  background: transparent;
+  border-color: var(--sage-line);
+}
+
+.shell-logout:hover:not(:disabled) {
+  background: var(--sage-deep);
 }
 
 .shell-main {
