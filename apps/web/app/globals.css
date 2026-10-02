@@ -6,6 +6,8 @@
  * only where it earns attention:
  *
  *   - buttons          sage fill, near-black text   (6.16:1)
+ *   - app sidebar      sage fill, near-black text   (6.16:1)
+ *   - app header       sage fill, near-black text   (6.16:1)
  *   - links            darkened sage text           (10.52:1)
  *   - key headings     darkened sage text           (10.52:1)
  *   - badges and icons darkened sage on neutral grey (9.37:1)
@@ -37,6 +39,10 @@
   --sage-hover: #93b59a;
   --sage-text: #2f4433;
   --on-sage: #1a2320;
+  /* Readable shades on the sage fill used by the app sidebar and header. */
+  --on-sage-soft: #2a3730;
+  --sage-deep: #73957d;
+  --sage-line: rgb(26 35 32 / 16%);
 
   --radius: 0.875rem;
   --shadow: 0 1px 2px rgb(33 40 43 / 6%), 0 8px 24px rgb(33 40 43 / 8%);
@@ -381,8 +387,7 @@ h3 {
 
 /* ------------------------------------------------------- authentication */
 
-.auth-page,
-.dashboard {
+.auth-page {
   min-height: 100vh;
   margin: 0 auto;
   padding: 3rem 1.5rem;
@@ -546,53 +551,287 @@ h3 {
   color: var(--muted);
 }
 
-/* ---------------------------------------------------------------- dashboard */
 
-.dashboard-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
+/* --------------------------------------------------------- app shell */
+
+.shell {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
+  min-height: 100vh;
+  background: var(--surface);
 }
 
-.dashboard-title {
+.shell-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  padding: 0.75rem 1rem;
+  background: var(--primary);
+  color: var(--on-primary);
+  z-index: 60;
+}
+
+.shell-skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+.shell-sidebar-wrap {
+  border-right: 1px solid var(--sage-line);
+  background: var(--sage);
+}
+
+.shell-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 1.25rem 1rem;
+  overflow-y: auto;
+}
+
+/* Pushes the sign-out row to the foot of the drawer at every height. */
+.shell-sidebar-footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.shell-sidebar-footer .shell-logout {
+  width: 100%;
+}
+
+.shell-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--on-sage);
+}
+
+.shell-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.shell-nav-link {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9375rem;
+  border-radius: 0.5rem;
+  color: var(--on-sage);
+}
+
+.shell-nav-link:hover {
+  background: var(--sage-deep);
+}
+
+.shell-nav-link[aria-current='page'] {
+  font-weight: 600;
+  color: var(--sage);
+  background: rgb(26 35 32 / 88%);
+  box-shadow: inset 2px 0 0 var(--on-sage);
+}
+
+.shell-nav-link:focus-visible {
+  outline: 2px solid var(--on-sage);
+  outline-offset: -2px;
+}
+
+.shell-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shell-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--sage);
+  border-bottom: 1px solid var(--sage-line);
+}
+
+.shell-menu-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--on-sage);
+  background: transparent;
+  border: 1px solid var(--sage-line);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.shell-account {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-left: auto;
+}
+
+.shell-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--on-sage);
+  background: rgb(255 255 255 / 40%);
+  border: 1px solid var(--sage-line);
+  border-radius: 50%;
+}
+
+.shell-account-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.shell-account-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--on-sage);
+}
+
+.shell-account-role {
+  font-size: 0.75rem;
+  color: var(--on-sage-soft);
+  font-weight: 600;
+}
+
+/* The ghost button sits on the sage header, so it needs its own readable
+   outline instead of the neutral grey one used on white. */
+.shell-logout {
+  padding: 0.5rem 0.875rem;
+  color: var(--on-sage);
+  background: transparent;
+  border-color: var(--sage-line);
+}
+
+.shell-logout:hover:not(:disabled) {
+  background: var(--sage-deep);
+}
+
+.shell-main {
+  flex: 1;
+  padding: 1.75rem 1.5rem 3rem;
+  min-width: 0;
+}
+
+.shell-scrim {
+  display: none;
+}
+
+/* Below the breakpoint the sidebar becomes an overlay drawer. */
+@media (max-width: 899px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .shell-menu-button {
+    display: inline-flex;
+  }
+
+  .shell-sidebar-wrap {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: 16rem;
+    transform: translateX(-100%);
+    transition: transform 180ms ease;
+    box-shadow: none;
+  }
+
+  .shell-sidebar-wrap[data-open='true'] {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgb(33 40 43 / 20%);
+  }
+
+  .shell-scrim {
+    position: fixed;
+    inset: 0;
+    display: block;
+    background: rgb(33 40 43 / 35%);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Keeps the scrim out of the tab order and the layout when the drawer is shut. */
+  .shell-sidebar-wrap[data-open='false'] .shell-scrim {
+    display: none;
+  }
+
+  .shell-account-text {
+    display: none;
+  }
+
+  .shell-header {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* ------------------------------------------------------------ page body */
+
+.page-title {
   font-size: 1.75rem;
   font-weight: 700;
 }
 
-.dashboard-subtitle {
+.page-note {
+  margin-top: 0.5rem;
+  max-width: 42rem;
   color: var(--muted);
-  margin: 0.25rem 0 0;
-  text-transform: capitalize;
+  line-height: 1.6;
 }
 
-.dashboard-card {
-  padding: 1.5rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+.page-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
 }
 
-.dashboard-card-title {
+.page-section-title {
   font-size: 1.125rem;
   font-weight: 600;
-  margin-bottom: 1rem;
 }
 
-.dashboard-details {
+.page-link-list {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0;
+  list-style: none;
 }
 
-.dashboard-details div {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.9375rem;
-}
-
-.dashboard-details dt {
-  color: var(--muted);
+.page-link-list li {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: 999px;
 }
