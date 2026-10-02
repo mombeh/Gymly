@@ -51,7 +51,8 @@ export interface CreateMemberInput {
   phone: string;
   email?: string;
   dateOfBirth?: string;
-  gender?: Gender;
+  /** An empty string means "not stated", which the API stores as null. */
+  gender?: Gender | '';
   address?: string;
   emergencyContact?: string;
 }

@@ -8,7 +8,7 @@ import { MemberForm } from '../../../../components/members/member-form';
 import { readToken } from '../../../../lib/auth-storage';
 import { createMember, describeMemberError } from '../../../../lib/members-api';
 import type { MemberFormValues } from '../../../../lib/member-validation';
-import type { Gender } from '../../../../lib/member-types';
+
 
 export default function NewMemberPage() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function NewMemberPage() {
           phone: values.phone,
           email: values.email,
           dateOfBirth: values.dateOfBirth,
-          gender: values.gender === '' ? undefined : (values.gender as Gender),
+          gender: values.gender === '' ? undefined : values.gender,
           address: values.address,
           emergencyContact: values.emergencyContact,
         },
