@@ -139,7 +139,7 @@ export class MembersService {
    * changes go through deactivate so that each one is a deliberate, logged act.
    */
   async update(id: string, dto: UpdateMemberDto): Promise<MemberResponse> {
-    const data = this.buildUpdateData(dto);
+    const data = pickFields(dto, UPDATE_FIELDS);
 
     if (Object.keys(data).length === 0) {
       throw new BadRequestException(NO_FIELDS_TO_UPDATE_MESSAGE);
@@ -151,7 +151,10 @@ export class MembersService {
       await this.assertPhoneIsFree(data.phone, id);
     }
 
-    const member = await this.prisma.member.update({ where: { id }, data });
+    const member = await this.prisma.member.update({
+      where: { id },
+      data: data as Prisma.MemberUpdateInput,
+    });
 
     this.logger.log(`Updated member ${member.memberCode}.`);
 
@@ -303,11 +306,6 @@ export class MembersService {
     }
 
     return clauses.length > 0 ? { AND: clauses } : {};
-  }
-
-  /** The fields actually present in the request, and nothing else. */
-  private buildUpdateData(dto: UpdateMemberDto): Prisma.MemberUpdateInput {
-    return pickFields(dto, UPDATE_FIELDS) as Prisma.MemberUpdateInput;
   }
 }
 

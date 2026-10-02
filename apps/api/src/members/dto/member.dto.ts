@@ -1,4 +1,5 @@
-import { applyDecorators, Transform, Type } from 'class-transformer';
+import { applyDecorators } from '@nestjs/common';
+import { Transform, Type } from 'class-transformer';
 import {
   IsDate,
   IsEmail,

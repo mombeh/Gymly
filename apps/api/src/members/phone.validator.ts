@@ -1,8 +1,8 @@
 import {
   registerDecorator,
-  ValidationArguments,
-  ValidationOptions,
   isString,
+  type ValidationArguments,
+  type ValidationOptions,
 } from 'class-validator';
 
 /** E.164 caps a subscriber number at 15 digits. */
@@ -46,11 +46,11 @@ export function isValidPhoneNumber(value: unknown): boolean {
  * decision to make. Only the digits are validated.
  */
 export function IsMemberPhone(validationOptions?: ValidationOptions): PropertyDecorator {
-  return function decorate(object: object, propertyName: string): void {
+  return function decorate(target: object, propertyKey: string | symbol): void {
     registerDecorator({
       name: 'isMemberPhone',
-      target: object.constructor,
-      propertyName,
+      target: target.constructor,
+      propertyName: propertyKey.toString(),
       options: validationOptions,
       validator: {
         validate: (value: unknown): boolean => isValidPhoneNumber(value),
