@@ -1,16 +1,11 @@
-import {
-  registerDecorator,
-  isString,
-  type ValidationArguments,
-  type ValidationOptions,
-} from 'class-validator';
+import { registerDecorator, isString, type ValidationOptions } from 'class-validator';
 
 /** E.164 caps a subscriber number at 15 digits. */
 const MIN_DIGITS = 7;
 const MAX_DIGITS = 15;
 
 /** Column width, mirrored from the schema so an oversized value fails as 400. */
-const MAX_LENGTH = 32;
+export const PHONE_MAX_LENGTH = 32;
 
 /**
  * The same reduction the database's members_phone_digits_key index performs:
@@ -29,7 +24,7 @@ export function isValidPhoneNumber(value: unknown): boolean {
     return false;
   }
 
-  if (value.length === 0 || value.length > MAX_LENGTH) {
+  if (value.length === 0 || value.length > PHONE_MAX_LENGTH) {
     return false;
   }
 
@@ -54,8 +49,7 @@ export function IsMemberPhone(validationOptions?: ValidationOptions): PropertyDe
       options: validationOptions,
       validator: {
         validate: (value: unknown): boolean => isValidPhoneNumber(value),
-        defaultMessage: (args: ValidationArguments): string =>
-          `phone must contain ${MIN_DIGITS}-${MAX_DIGITS} digits`,
+        defaultMessage: () => `phone must contain ${MIN_DIGITS}-${MAX_DIGITS} digits`,
       },
     });
   };

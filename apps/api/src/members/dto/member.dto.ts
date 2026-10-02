@@ -63,6 +63,12 @@ function OptionalTextField(field: 'address' | 'emergencyContact'): PropertyDecor
  * forbidNonWhitelisted, so a caller who sends one is rejected with 400 rather
  * than choosing their own member number. status is absent for the same reason,
  * because deactivation has its own endpoint and a new member starts PENDING.
+ *
+ * Every property uses `declare`, which suppresses the emitted field
+ * initialiser. Without it the class would define an own property for each one,
+ * and the service could no longer tell "the client sent this field" from "this
+ * field exists and happens to be undefined", which is what a partial update
+ * depends on.
  */
 export class CreateMemberDto {
   @NameField('firstName')
@@ -73,7 +79,7 @@ export class CreateMemberDto {
 
   @Transform(trim)
   @IsMemberPhone({ message: 'phone must contain 7-15 digits' })
-  phone!: string;
+  declare phone: string;
 
   // The members table has no unique index on email: two members of one household
   // legitimately share an address, so a duplicate email is allowed and is
@@ -82,26 +88,26 @@ export class CreateMemberDto {
   @Transform(trim)
   @IsEmail({}, { message: 'email must be a valid email address' })
   @MaxLength(320, { message: 'email must be at most 320 characters' })
-  email?: string;
+  declare email?: string;
 
   @IsOptional()
   @Type(() => Date)
   @IsDate({ message: 'dateOfBirth must be a valid date' })
   @MinDate(EARLIEST_DATE_OF_BIRTH, { message: 'dateOfBirth must be on or after 1900-01-01' })
   @MaxDate(() => new Date(), { message: 'dateOfBirth must be in the past' })
-  dateOfBirth?: Date;
+  declare dateOfBirth?: Date;
 
   @IsOptional()
   @IsEnum(Gender, { message: `gender must be one of: ${Object.keys(Gender).join(', ')}` })
-  gender?: Gender;
+  declare gender?: Gender;
 
   @IsOptional()
   @OptionalTextField('address')
-  address?: string;
+  declare address?: string;
 
   @IsOptional()
   @OptionalTextField('emergencyContact')
-  emergencyContact?: string;
+  declare emergencyContact?: string;
 }
 
 /**
@@ -125,30 +131,30 @@ export class UpdateMemberDto {
   @ValidateIf((_object, value: unknown) => value !== undefined)
   @Transform(trim)
   @IsMemberPhone({ message: 'phone must contain 7-15 digits' })
-  phone?: string;
+  declare phone?: string;
 
   @IsOptional()
   @Transform(trim)
   @IsEmail({}, { message: 'email must be a valid email address' })
   @MaxLength(320, { message: 'email must be at most 320 characters' })
-  email?: string | null;
+  declare email?: string | null;
 
   @IsOptional()
   @Type(() => Date)
   @IsDate({ message: 'dateOfBirth must be a valid date' })
   @MinDate(EARLIEST_DATE_OF_BIRTH, { message: 'dateOfBirth must be on or after 1900-01-01' })
   @MaxDate(() => new Date(), { message: 'dateOfBirth must be in the past' })
-  dateOfBirth?: Date | null;
+  declare dateOfBirth?: Date | null;
 
   @IsOptional()
   @IsEnum(Gender, { message: `gender must be one of: ${Object.keys(Gender).join(', ')}` })
-  gender?: Gender | null;
+  declare gender?: Gender | null;
 
   @IsOptional()
   @OptionalTextField('address')
-  address?: string | null;
+  declare address?: string | null;
 
   @IsOptional()
   @OptionalTextField('emergencyContact')
-  emergencyContact?: string | null;
+  declare emergencyContact?: string | null;
 }

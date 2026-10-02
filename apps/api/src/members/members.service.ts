@@ -151,10 +151,23 @@ export class MembersService {
       await this.assertPhoneIsFree(data.phone, id);
     }
 
-    const member = await this.prisma.member.update({
-      where: { id },
-      data: data as Prisma.MemberUpdateInput,
-    });
+    let member;
+
+    try {
+      member = await this.prisma.member.update({
+        where: { id },
+        data: data as Prisma.MemberUpdateInput,
+      });
+    } catch (error) {
+      // The member may have been removed between the last read and this write.
+      // Prisma reports that as P2025, which would otherwise surface as a 500 for
+      // what is plainly a 404.
+      if (isRecordNotFound(error)) {
+        throw new NotFoundException(MEMBER_NOT_FOUND_MESSAGE);
+      }
+
+      throw error;
+    }
 
     this.logger.log(`Updated member ${member.memberCode}.`);
 
@@ -333,4 +346,9 @@ function pickFields<T extends object, K extends readonly (keyof T)[]>(
 
 function isUniqueViolation(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+}
+
+/** Prisma's code for an update or delete that matched no row. */
+function isRecordNotFound(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025';
 }
