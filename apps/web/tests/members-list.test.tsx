@@ -1,12 +1,11 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { MembersList } from '../components/members/members-list';
 import { writeToken } from '../lib/auth-storage';
 import type { Member, MemberPage } from '../lib/member-types';
-import { installFetchMock, jsonResponse, stubApi, type RecordedCall } from './test-utils';
+import { installFetchMock, jsonResponse, type RecordedCall } from './test-utils';
 
 const nav = vi.hoisted(() => ({
   replace: vi.fn(),
@@ -59,12 +58,28 @@ function page(members: Member[], overrides: Partial<MemberPage> = {}): MemberPag
   };
 }
 
-/** Answers the list endpoint, and records what was asked for. */
-function stubList(routes: Record<string, () => Promise<Response>> = {}) {
-  stubApi(fetchMock, {
-    [MEMBERS_URL]: async () => jsonResponse(200, page([member()])),
-    ...routes,
+/**
+ * Answers the list endpoint whatever query it carries.
+ *
+ * The page always requests a page size, so the URL is never bare; matching on
+ * the path alone means a test asserts on the query it cares about rather than
+ * having to reproduce the whole one. Any other URL still fails loudly.
+ */
+function stubListWith(handler: (url: URL) => Response | Promise<Response>) {
+  fetchMock.mockImplementation(async (url: string) => {
+    const parsed = new URL(url);
+
+    if (parsed.origin + parsed.pathname !== MEMBERS_URL) {
+      throw new Error(`Unstubbed request to ${url}`);
+    }
+
+    return handler(parsed);
   });
+}
+
+/** Answers the list endpoint with a fixed page of members. */
+function stubList(members: Member[] = [member()], overrides: Partial<MemberPage> = {}) {
+  stubListWith(() => jsonResponse(200, page(members, overrides)));
 }
 
 /** Renders the list signed in, so a bearer token is attached. */
@@ -72,6 +87,20 @@ function renderList() {
   writeToken(TOKEN);
 
   return render(<MembersList />);
+}
+
+/** Renders the list with no session, as after the token expired. */
+function renderListSignedOut() {
+  window.localStorage.clear();
+
+  return render(<MembersList />);
+}
+
+/** The most recent request, for assertions about a later interaction. */
+function lastCall(): RecordedCall {
+  const count = fetchMock.mock.calls.length;
+
+  return recordedCall(count - 1);
 }
 
 beforeEach(() => {
@@ -100,22 +129,16 @@ describe('the members list', () => {
   });
 
   it('shows the code, name, phone, status and registration date', async () => {
-    stubList({
-      [MEMBERS_URL]: async () =>
-        jsonResponse(
-          200,
-          page([
-            member({
-              memberCode: 'GYM-000042',
-              firstName: 'Amina',
-              lastName: 'Abdi',
-              phone: '+254733000222',
-              status: 'ACTIVE',
-              createdAt: '2026-02-14T10:30:00.000Z',
-            }),
-          ]),
-        ),
-    });
+    stubList([
+      member({
+        memberCode: 'GYM-000042',
+        firstName: 'Amina',
+        lastName: 'Abdi',
+        phone: '+254733000222',
+        status: 'ACTIVE',
+        createdAt: '2026-02-14T10:30:00.000Z',
+      }),
+    ]);
 
     renderList();
 
@@ -128,29 +151,29 @@ describe('the members list', () => {
   });
 
   it('shows a loading state before the members arrive', async () => {
-    let release: (() => void) | null = null;
-    const gate = new Promise<void>((resolve) => {
-      release = resolve;
+    // A holder, not a bare variable: the assignment happens inside the executor,
+    // which the type checker cannot see through.
+    const gate = { open: null as null | (() => void) };
+    const pending = new Promise<void>((resolve) => {
+      gate.open = resolve;
     });
 
-    stubApi(fetchMock, {
-      [MEMBERS_URL]: async () => {
-        await gate;
+    stubListWith(async () => {
+      await pending;
 
-        return jsonResponse(200, page([member()]));
-      },
+      return jsonResponse(200, page([member()]));
     });
 
     renderList();
 
     expect(screen.getByText('Loading members…')).toBeTruthy();
 
-    release?.();
+    gate.open?.();
     expect(await screen.findByText('GYM-000001')).toBeTruthy();
   });
 
   it('shows an empty state with a way to register the first member', async () => {
-    stubList({ [MEMBERS_URL]: async () => jsonResponse(200, page([])) });
+    stubList([]);
 
     renderList();
 
@@ -161,14 +184,12 @@ describe('the members list', () => {
   it('shows an API error and can retry', async () => {
     let attempt = 0;
 
-    stubApi(fetchMock, {
-      [MEMBERS_URL]: async () => {
-        attempt += 1;
+    stubListWith(() => {
+      attempt += 1;
 
-        return attempt === 1
-          ? jsonResponse(500, { statusCode: 500, error: 'Internal server error', message: 'boom' })
-          : jsonResponse(200, page([member()]));
-      },
+      return attempt === 1
+        ? jsonResponse(500, { statusCode: 500, error: 'Internal server error', message: 'boom' })
+        : jsonResponse(200, page([member()]));
     });
 
     renderList();
@@ -181,14 +202,13 @@ describe('the members list', () => {
   });
 
   it('reports a forbidden response as a permission problem', async () => {
-    stubList({
-      [MEMBERS_URL]: async () =>
-        jsonResponse(403, {
-          statusCode: 403,
-          error: 'Forbidden',
-          message: 'You do not have permission to perform this action',
-        }),
-    });
+    stubListWith(() =>
+      jsonResponse(403, {
+        statusCode: 403,
+        error: 'Forbidden',
+        message: 'You do not have permission to perform this action',
+      }),
+    );
 
     renderList();
 
@@ -198,10 +218,9 @@ describe('the members list', () => {
   });
 
   it('reports an expired session rather than pretending there are no members', async () => {
-    window.localStorage.clear();
     stubList();
 
-    renderList();
+    renderListSignedOut();
 
     expect(
       await screen.findByText('Your session has ended. Sign in again to view members.'),
@@ -214,8 +233,8 @@ describe('the members list', () => {
 
     renderList();
 
-    const links = await screen.findAllByRole('link', { name: 'Grace Wanjiku' });
-    expect(links[0].getAttribute('href')).toBe('/members/member-1');
+    const [nameLink] = await screen.findAllByRole('link', { name: 'Grace Wanjiku' });
+    expect(nameLink?.getAttribute('href')).toBe('/members/member-1');
     expect(screen.getByRole('link', { name: 'Register member' })).toBeTruthy();
   });
 });
@@ -230,7 +249,7 @@ describe('searching members', () => {
     await userEvent.setup().type(screen.getByLabelText('Search'), 'wanj');
 
     await waitFor(() => {
-      expect(recordedCall().url).toContain('q=wanj');
+      expect(lastCall().url).toContain('q=wanj');
     });
   });
 
@@ -244,15 +263,12 @@ describe('searching members', () => {
     await userEvent.setup().clear(search);
 
     await waitFor(() => {
-      expect(recordedCall().url).not.toContain('q=');
+      expect(lastCall().url).not.toContain('q=');
     });
   });
 
   it('shows the members the API returned for the search', async () => {
-    stubList({
-      [MEMBERS_URL]: async () =>
-        jsonResponse(200, page([member({ id: 'member-9', firstName: 'Peter', lastName: 'Otieno' })])),
-    });
+    stubList([member({ id: 'member-9', firstName: 'Peter', lastName: 'Otieno' })]);
 
     renderList();
 
@@ -267,7 +283,7 @@ describe('searching members', () => {
     renderList();
     await screen.findByText('GYM-000001');
 
-    stubApi(fetchMock, { [MEMBERS_URL]: async () => jsonResponse(200, page([])) });
+    stubList([]);
     await userEvent.setup().type(screen.getByLabelText('Search'), 'zzz');
 
     expect(await screen.findByText('No members match those filters.')).toBeTruthy();
@@ -283,7 +299,7 @@ describe('searching members', () => {
     await userEvent.setup().selectOptions(screen.getByLabelText('Status'), 'ACTIVE');
 
     await waitFor(() => {
-      expect(recordedCall().url).toContain('status=ACTIVE');
+      expect(lastCall().url).toContain('status=ACTIVE');
     });
   });
 
@@ -298,7 +314,7 @@ describe('searching members', () => {
     await userEvent.setup().click(screen.getByLabelText('Show deactivated'));
 
     await waitFor(() => {
-      expect(recordedCall().url).toContain('includeInactive=false');
+      expect(lastCall().url).toContain('includeInactive=false');
     });
   });
 
@@ -316,7 +332,7 @@ describe('searching members', () => {
     await user.click(await screen.findByRole('button', { name: 'Clear' }));
 
     await waitFor(() => {
-      const url = recordedCall().url;
+      const url = lastCall().url;
 
       expect(url).not.toContain('q=');
       expect(url).not.toContain('status=');
@@ -327,10 +343,7 @@ describe('searching members', () => {
 
 describe('paging the members list', () => {
   it('reports the total and only pages when there is more than one page', async () => {
-    stubList({
-      [MEMBERS_URL]: async () =>
-        jsonResponse(200, page([member()], { total: 45, page: 1, limit: 20, pageCount: 3 })),
-    });
+    stubList([member()], { total: 45, page: 1, limit: 20, pageCount: 3 });
 
     renderList();
 
@@ -339,25 +352,19 @@ describe('paging the members list', () => {
   });
 
   it('requests the next page', async () => {
-    stubList({
-      [MEMBERS_URL]: async () =>
-        jsonResponse(200, page([member()], { total: 45, page: 1, limit: 20, pageCount: 3 })),
-    });
+    stubList([member()], { total: 45, page: 1, limit: 20, pageCount: 3 });
 
     renderList();
 
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Next' }));
 
     await waitFor(() => {
-      expect(recordedCall().url).toContain('page=2');
+      expect(lastCall().url).toContain('page=2');
     });
   });
 
   it('disables Previous on the first page', async () => {
-    stubList({
-      [MEMBERS_URL]: async () =>
-        jsonResponse(200, page([member()], { total: 45, page: 1, limit: 20, pageCount: 3 })),
-    });
+    stubList([member()], { total: 45, page: 1, limit: 20, pageCount: 3 });
 
     renderList();
 
@@ -374,10 +381,3 @@ describe('paging the members list', () => {
   });
 });
 
-/**
- * Renders the list inside an auth provider, for tests that need the shell's
- * session context as well as the list itself.
- */
-export function renderListWithAuth(children: ReactNode) {
-  return render(children);
-}

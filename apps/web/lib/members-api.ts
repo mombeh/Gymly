@@ -103,11 +103,17 @@ export function createMember(input: CreateMemberInput, token: string) {
 }
 
 /**
- * Sends only the fields that changed.
+ * Sends the fields the caller provides, and only those.
  *
- * The endpoint is a partial update, so sending an unchanged field would be noise
- * at best; sending an omitted one as blank would be rejected. A field the person
- * deliberately cleared travels as null.
+ * The endpoint is a partial update, so an absent key is left alone rather than
+ * cleared. A field the person deliberately emptied travels as null, which is the
+ * one way to clear an optional value: the API rejects a blank string, because
+ * "not provided" and "provided but empty" are different states there.
+ *
+ * The edit form sends every field it owns, since the whole form is the person's
+ * statement of the record. That is safe here because it can only write the eight
+ * fields the API exposes for update: the member code and the status are not
+ * among them, so no form field can change either.
  */
 export function updateMember(id: string, input: UpdateMemberInput, token: string) {
   const body: Record<string, unknown> = {};
@@ -118,7 +124,9 @@ export function updateMember(id: string, input: UpdateMemberInput, token: string
 
   if (input.email !== undefined) body['email'] = input.email?.trim() || null;
   if (input.dateOfBirth !== undefined) body['dateOfBirth'] = input.dateOfBirth || null;
-  if (input.gender !== undefined && input.gender !== null) body['gender'] = input.gender;
+  // "Not stated" travels as null. The API's gender rule accepts the enum or
+  // nothing at all, so an empty string would be refused as an invalid value.
+  if (input.gender !== undefined) body['gender'] = input.gender === '' ? null : input.gender;
   if (input.address !== undefined) body['address'] = input.address?.trim() || null;
   if (input.emergencyContact !== undefined) {
     body['emergencyContact'] = input.emergencyContact?.trim() || null;
