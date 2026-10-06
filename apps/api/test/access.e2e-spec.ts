@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import type { INestApplication } from '@nestjs/common';
@@ -10,7 +10,7 @@ import { PrismaService, createPrismaClient } from '../src/prisma/prisma.service'
 import type { AppConfiguration } from '../src/config/configuration';
 import type { PrismaClient } from '../src/generated/prisma/client';
 import { INSUFFICIENT_ROLE_MESSAGE } from '../src/auth/guards/roles.guard';
-import { AUTHENTICATION_REQUIRED_MESSAGE } from '../src/auth/auth.types';
+import { AUTHENTICATION_REQUIRED_MESSAGE, INVALID_CREDENTIALS_MESSAGE } from '../src/auth/auth.types';
 import { UserRole } from '../src/generated/prisma/client';
 
 const PASSWORD = 'role-check-password-123';
@@ -255,6 +255,88 @@ describe('Role-based access control (e2e)', () => {
         .get('/api/access/administration')
         .set(as(forged))
         .expect(401);
+    });
+  });
+
+  /**
+   * A token outlives the permissions it was minted with, so the guard has to
+   * re-read the row rather than trust the claims. Without this, a privilege
+   * change would go unenforced until the token happened to expire.
+   */
+  describe('an already-issued token after the account changes', () => {
+    it('stops honouring the old role once the account is demoted', async () => {
+      const token = await tokenFor(ACCOUNTS[1]);
+
+      // The receptionist is now a trainer, so front-desk work is no longer theirs.
+      await prisma.user.update({ where: { email: ACCOUNTS[1].email }, data: { role: 'TRAINER' } });
+
+      const response = await request(app.getHttpServer())
+        .get('/api/access/front-desk')
+        .set(as(token));
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe(INSUFFICIENT_ROLE_MESSAGE);
+    });
+
+    it('starts honouring a new role once the account is promoted', async () => {
+      const token = await tokenFor(ACCOUNTS[3]);
+
+      await prisma.user.update({ where: { email: ACCOUNTS[3].email }, data: { role: 'OWNER' } });
+
+      await request(app.getHttpServer())
+        .get('/api/access/administration')
+        .set(as(token))
+        .expect(200);
+    });
+
+    it('is refused with 403 once the account is suspended', async () => {
+      const token = await tokenFor(ACCOUNTS[0]);
+
+      await prisma.user.update({ where: { email: ACCOUNTS[0].email }, data: { status: 'SUSPENDED' } });
+
+      const response = await request(app.getHttpServer())
+        .get('/api/access/administration')
+        .set(as(token));
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('This account is suspended. Contact an owner to reactivate it.');
+    });
+
+    it.each(['INACTIVE', 'PENDING'] as const)('is refused once the account is %s', async (status) => {
+      const token = await tokenFor(ACCOUNTS[0]);
+
+      await prisma.user.update({ where: { email: ACCOUNTS[0].email }, data: { status } });
+
+      await request(app.getHttpServer())
+        .get('/api/access/administration')
+        .set(as(token))
+        .expect(403);
+    });
+
+    it('is refused with 401 once the account is deleted', async () => {
+      const token = await tokenFor(ACCOUNTS[0]);
+
+      await prisma.user.delete({ where: { email: ACCOUNTS[0].email } });
+
+      const response = await request(app.getHttpServer())
+        .get('/api/access/administration')
+        .set(as(token));
+
+      expect(response.status).toBe(401);
+      expect(response.body.message).toBe(INVALID_CREDENTIALS_MESSAGE);
+    });
+
+    it('leaks nothing about the account it just refused', async () => {
+      const token = await tokenFor(ACCOUNTS[0]);
+
+      await prisma.user.delete({ where: { email: ACCOUNTS[0].email } });
+
+      const response = await request(app.getHttpServer())
+        .get('/api/access/administration')
+        .set(as(token))
+        .expect(401);
+
+      expect(JSON.stringify(response.body)).not.toContain(ACCOUNTS[0].email);
     });
   });
 
