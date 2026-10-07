@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 /** bcrypt work factor. 12 is a current default and costs roughly 0.4s per hash. */
 export const BCRYPT_ROUNDS = 12;
 
-let timingEqualisationHash: Promise<string> | undefined;
+let timingEqualisationHash: Promise<string>;
 
 /**
  * A real bcrypt digest of a randomly generated string that is never a password.
@@ -16,7 +16,9 @@ let timingEqualisationHash: Promise<string> | undefined;
  * dummy comparison exists to remove.
  */
 export function getTimingEqualisationHash(): Promise<string> {
-  timingEqualisationHash ??= bcrypt.hash(randomBytes(32).toString('hex'), BCRYPT_ROUNDS);
+  if (timingEqualisationHash === undefined) {
+    timingEqualisationHash = bcrypt.hash(randomBytes(32).toString('hex'), BCRYPT_ROUNDS);
+  }
 
   return timingEqualisationHash;
 }

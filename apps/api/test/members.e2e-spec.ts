@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types';

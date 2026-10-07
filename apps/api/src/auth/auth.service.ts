@@ -7,6 +7,7 @@ import { TokenService } from './token.service';
 import {
   EMAIL_TAKEN_MESSAGE,
   INVALID_CREDENTIALS_MESSAGE,
+  inactiveAccountMessage,
   toPublicUser,
   type AuthenticatedUser,
   type CurrentUserResponse,
@@ -61,9 +62,7 @@ export class AuthService {
     if (user.status !== 'ACTIVE') {
       this.logger.warn(`Rejected login for ${user.email}: account is ${user.status}.`);
 
-      throw new ForbiddenException(
-        `This account is ${user.status.toLowerCase()}. Contact an owner to reactivate it.`,
-      );
+      throw new ForbiddenException(inactiveAccountMessage(user.status));
     }
 
     const accessToken = await this.tokenService.issue({
@@ -165,9 +164,7 @@ export class AuthService {
     }
 
     if (user.status !== 'ACTIVE') {
-      throw new ForbiddenException(
-        `This account is ${user.status.toLowerCase()}. Contact an owner to reactivate it.`,
-      );
+      throw new ForbiddenException(inactiveAccountMessage(user.status));
     }
 
     return { user: toPublicUser(user) };

@@ -1,5 +1,5 @@
-import { PlaceholderPage } from '../../../components/shell/placeholder-page';
+import { MembersList } from '../../../components/members/members-list';
 
-export default function Page() {
-  return <PlaceholderPage title="Members" />;
+export default function MembersPage() {
+  return <MembersList />;
 }

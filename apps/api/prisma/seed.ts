@@ -17,7 +17,7 @@
  */
 import 'dotenv/config';
 import { Pool } from 'pg';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 import { BCRYPT_ROUNDS } from '../src/auth/password.service';
 import { UserRole, type UserRole as UserRoleType } from '../src/generated/prisma/enums';
